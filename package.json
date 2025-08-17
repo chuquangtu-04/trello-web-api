@@ -1,0 +1,10 @@
+{
+  "name": "trello-web-api",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "quangtudev mern stack",
+  "main": "src/server.js",
+  "author": "quangtudev",
+  "license": "MIT",
+  "private": true
+}
