@@ -1,13 +1,11 @@
-const MONGODB_URI = 'mongodb+srv://chuquangtus2004:ajPDs7hA3Hv1Y5lH@cluster0-chuquangtu.d3vrjhr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0-ChuQuangTu'
-const DATABASE_NAME = 'trello-web-chuquangtu04'
-
 import { MongoClient, ServerApiVersion } from 'mongodb'
+import { env } from './environment'
 
 // Khởi tạo một đối tượng trelloDatabaseInstance ban đầu là null (vì chúng ta chưa connect)
 let trelloDatabaseInstance = null
 
 // Khởi tạo một đối tượng mongoClientInstance Instance để connect tới MongoDB
-const mongoClientInstance = new MongoClient(MONGODB_URI, {
+const mongoClientInstance = new MongoClient(env.MONGODB_URI, {
 // Lưu ý: cái serverApi có từ phiên bản MongoDB 5.0.0 trở lên, có thể không cần dùng nó, còn nếu dùng nó là chúng
 // ta sẽ chỉ định một cái Stable API Version của MongoDB
 // Đọc thêm ở đây: https://www.mongodb.com/docs/drivers/node/current/fundamentals/stable-api/
@@ -28,7 +26,7 @@ export const CONNECT_DB = async () => {
 // Gọi kết nối tới mongoDB atlas với URI đã khai báo trong thân của mongoClientInstance
   await mongoClientInstance.connect()
   // Kết nối thành công thì lấy ra Database theo tên và gán ngược nó lại vào biến trelloDatabaseInstance ở trên của chúng ta
-  trelloDatabaseInstance = mongoClientInstance.db(DATABASE_NAME)
+  trelloDatabaseInstance = mongoClientInstance.db(env.DATABASE_NAME)
 }
 
 // Function GET_DB (không async) này có nhiệm vụ export ra cái Trello Database Instance sau khi đã connect thành
