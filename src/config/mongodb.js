@@ -15,11 +15,11 @@ const mongoClientInstance = new MongoClient(MONGODB_URI, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true
-  },
+  }
   // Mặc định, driver mongodb trong Node.js có option autoSelectFamily: true.
   // Nó sẽ thử kết nối bằng IPv6 trước, nếu thấy host hỗ trợ IPv6.
   // Tuy nhiên, nhiều mạng (hoặc máy) có IPv6 nhưng cấu hình TLS chưa chuẩn → kết nối TLS bị fail với lỗi
-  autoSelectFamily: false
+  // autoSelectFamily: false
 
 })
 
@@ -37,4 +37,8 @@ export const CONNECT_DB = async () => {
 export const GET_DB = () => {
   if (!trelloDatabaseInstance) throw new Error('Must connect to Database first!')
   return trelloDatabaseInstance
+}
+// Đóng kết nối database khi cần
+export const CLOSE_DB = async () => {
+  await mongoClientInstance.close()
 }
