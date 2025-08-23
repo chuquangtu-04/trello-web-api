@@ -10,5 +10,8 @@ Router.route('/')
   })
   // Lần lượt chạy boardValidation.createNew khi nó chạy, validation xong nó next thì chạy tiếp boardController.createNew
   .post(boardValidation.createNew, boardController.createNew)
+Router.route('/:id')
+  .get(boardController.getDetails)
+  .put() // Update
 
 export const boardRouter = Router
