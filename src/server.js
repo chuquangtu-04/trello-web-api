@@ -4,12 +4,14 @@ import express from 'express'
 import { CONNECT_DB, CLOSE_DB } from '~/config/mongodb'
 import { env } from './config/environment'
 import { APIs_v1 } from './routes/v1'
+import { corsOptions } from './config/cors'
+import cors from 'cors'
 import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
 const START_SERVER = () => {
   const app = express()
   // Enable req.body json data
   app.use(express.json())
-
+  app.use(cors(corsOptions))
   // Use Api v1
   app.use('/v1', APIs_v1)
 
