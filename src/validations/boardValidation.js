@@ -2,6 +2,7 @@
 import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError'
+import { BOARD_TYPE } from '~/utils/constants'
 
 const createNew = async (req, res, next) => {
 // * Note: Mặc định chúng ta không cần phải custom message ở phía BE làm gì
@@ -20,7 +21,8 @@ const createNew = async (req, res, next) => {
       'string.max': 'Title length must be less than or equal to 5 characters long (chuquangtu)',
       'string.trim': 'Title must not have leading or trailing whitespace (chuquangtu)'
     }),
-    description: Joi.string().required().min(3).max(256).trim().strict()
+    description: Joi.string().required().min(3).max(256).trim().strict(),
+    type: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE).required()
   })
   try {
     // Chỉ định abortEarly: false để trường hợp có nhiều lỗi validation thì trả về tất cả
