@@ -1,4 +1,4 @@
-import Joi, { date } from 'joi'
+import Joi from 'joi'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { GET_DB } from '~/config/mongodb'
 import { ObjectId } from 'mongodb'
@@ -35,7 +35,7 @@ const createNew = async (data) => {
 const findOneById = async (id) => {
   try {
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({
-      _id: new ObjectId(id)
+      _id: ObjectId.createFromHexString(id)
     })
     return result
   } catch (error) {throw new Error(error)}
@@ -43,14 +43,11 @@ const findOneById = async (id) => {
 // Query tổng hợp (aggregate) để lấy toàn bộ column và Cards thuộc về board
 const getDetails = async (id) => {
   try {
-    // const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({
-    //   _id: new ObjectId(id)
-    // })
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate(
       [
         {
           $match: {
-            _id: new ObjectId(id),
+            _id: ObjectId.createFromHexString(id),
             _destroy: false
           }
         },
@@ -72,7 +69,7 @@ const getDetails = async (id) => {
         }
       ]
     ).toArray()
-    return result[0] || {}
+    return result[0] || null
   } catch (error) {throw new Error(error)}
 }
 export const boardModel = {
