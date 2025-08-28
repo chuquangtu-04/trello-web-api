@@ -23,7 +23,13 @@ const validateBeforeCreate = async (data) => {
 const createNew = async (data) => {
   try {
     const validateData = await validateBeforeCreate(data)
-    const createCard = await GET_DB().collection(CARD_COLLECTION_NAME).insertOne(validateData)
+    // Biến đổi một số dữ liệu liên quan đến ObjectId chuẩn chỉnh
+    const newCardToAdd = {
+      ...validateData,
+      boardId: ObjectId.createFromHexString(validateData.boardId),
+      columnId: ObjectId.createFromHexString(validateData.columnId)
+    }
+    const createCard = await GET_DB().collection(CARD_COLLECTION_NAME).insertOne(newCardToAdd)
     return createCard
   } catch (error) {throw new Error(error)}
 }

@@ -1,10 +1,10 @@
 import Joi from 'joi'
-import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
-import { GET_DB } from '~/config/mongodb'
 import { ObjectId } from 'mongodb'
+import { GET_DB } from '~/config/mongodb'
 import { BOARD_TYPE } from '~/utils/constants'
-import { columnModel } from './columnModel'
+import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { cardModel } from './cardModel'
+import { columnModel } from './columnModel'
 
 // Define collection (Name & Schema)
 const BOARD_COLLECTION_NAME = 'boards'
@@ -72,11 +72,31 @@ const getDetails = async (id) => {
     return result[0] || null
   } catch (error) {throw new Error(error)}
 }
+
+// Nhiệm vụ của fn này là push 1 cái giá trị columnId vào cuối mảng columnOrdersIds
+const pushColumnOrderIds = async (column) => {
+  try {
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      {
+        _id: ObjectId.createFromHexString(column.boardId.toString())
+      },
+      {
+        $push: { columnOrderIds: ObjectId.createFromHexString(column._id.toString()) }
+      },
+      {
+        returnDocument: 'after'
+      }
+    )
+    return result || null
+  } catch (error) {throw new Error(error)}
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
   createNew,
   validateBeforeCreate,
   findOneById,
-  getDetails
+  getDetails,
+  pushColumnOrderIds
 }
