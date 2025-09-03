@@ -42,9 +42,28 @@ const findOneById = async (id) => {
   } catch (error) {throw new Error(error)}
 }
 
+const updateCard = async (overColumnId, activeCardId) => {
+  try {
+    const result = await GET_DB().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      {
+        _id: ObjectId.createFromHexString(activeCardId)
+      },
+      {
+        $set: { columnId: ObjectId.createFromHexString(overColumnId) }
+      },
+      {
+        upsert: false,
+        returnDocument: 'after'
+      }
+    )
+    return result
+  } catch (error) {throw new Error(error)}
+}
+
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
   createNew,
-  findOneById
+  findOneById,
+  updateCard
 }
