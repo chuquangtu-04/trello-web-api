@@ -85,11 +85,16 @@ const updateColumn = async (columnId, newColumnData) => {
   } catch (error) {throw new Error(error)}
 }
 const updateCardOutColumn = async (activeColumnId, overColumnId, newUpdateActiveColumn, newUpdateOverColumn) => {
-  // Object.keys(newColumnData).forEach(fieldName => {
-  //   if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
-  //     delete newColumnData[fieldName]
-  //   }
-  // })
+  Object.keys(newUpdateActiveColumn).forEach(fieldName => {
+    if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
+      delete newUpdateActiveColumn[fieldName]
+    }
+  })
+  Object.keys(newUpdateOverColumn).forEach(fieldName => {
+    if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
+      delete newUpdateOverColumn[fieldName]
+    }
+  })
   try {
     const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).bulkWrite([
       {

@@ -2,7 +2,7 @@
 import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError'
-import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
+import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE, OBJECT_ID_RULE_MESSAGE_MOVING_CARD } from '~/utils/validators'
 
 const createNew = async (req, res, next) => {
   const correctCondition = Joi.object({
@@ -38,4 +38,23 @@ const updateColumn = async (req, res, next) => {
   }
 }
 
-export const columnValidation = { createNew, updateColumn }
+// Validation ngoài column
+const updateCardOutColumn = async (req, res, next) => {
+  const correctCondition = Joi.object({
+    activeCardId: Joi.string().required().pattern(OBJECT_ID_RULE).messages({ 'string.pattern.base':  OBJECT_ID_RULE_MESSAGE_MOVING_CARD('activeCardId') }),
+    activeColumnId: Joi.string().required().pattern(OBJECT_ID_RULE).messages({ 'string.pattern.base':  OBJECT_ID_RULE_MESSAGE_MOVING_CARD('activeColumnId') }),
+    overColumnId: Joi.string().required().pattern(OBJECT_ID_RULE).messages({ 'string.pattern.base':  OBJECT_ID_RULE_MESSAGE_MOVING_CARD('overColumnId') } ),
+    columnActiveOrderIds: Joi.object().required().messages({ 'string.pattern.base':  OBJECT_ID_RULE_MESSAGE_MOVING_CARD('columnActiveOrderIds') }),
+    columnOverOrderIds: Joi.object().required().messages({ 'string.pattern.base':  OBJECT_ID_RULE_MESSAGE_MOVING_CARD('columnActiveOrderIds') })
+  })
+  try {
+    await correctCondition.validateAsync(req.body, { abortEarly: false })
+    next()
+  } catch (error) {
+    const errorMessage = new Error(error).message
+    const customError = new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, errorMessage)
+    next(customError)
+  }
+}
+
+export const columnValidation = { createNew, updateColumn, updateCardOutColumn }

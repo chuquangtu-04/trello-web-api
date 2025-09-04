@@ -5,9 +5,12 @@ const Router = express.Router()
 
 Router.route('/')
   .post(columnValidation.createNew, columnController.createNew)
-  .put(columnValidation.updateColumn, columnController.updateCardOutColumn)
 
+// Di chuyển Card ngoài column
+Router.route('/moving_card')
+  .put(columnValidation.updateCardOutColumn, columnController.updateCardOutColumn)
 
+// Di chuyển card trong cùng 1 column
 Router.route('/:id')
   .put(columnValidation.updateColumn, columnController.updateColumn)
 
