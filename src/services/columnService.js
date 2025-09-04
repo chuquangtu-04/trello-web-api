@@ -1,5 +1,6 @@
 /* eslint-disable no-useless-catch */
 import { boardModel } from '~/models/boardModel'
+import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
 const createNew = async (reqBody) => {
   try {
@@ -18,4 +19,39 @@ const createNew = async (reqBody) => {
     return getNewColumn
   } catch (error) {throw error}
 }
-export const columnService = { createNew }
+
+const updateColumn = async (columnId, reqBody) => {
+  try {
+    const newColumnData = {
+      ...reqBody,
+      updatedAt: Date.now()
+    }
+    const updateColumn = await columnModel.updateColumn(columnId, newColumnData)
+    return updateColumn
+  } catch (error) {throw error}
+}
+
+const updateCardOutColumn = async (reqBody) => {
+  try {
+    const activeColumnId = reqBody.activeColumnId
+    const overColumnId = reqBody.overColumnId
+    const activeCardId = reqBody.activeCardId
+
+    const newUpdateActiveColumn = {
+      ...reqBody.columnActiveOrderIds,
+      updatedAt: Date.now()
+    }
+    const newUpdateOverColumn = {
+      ...reqBody.columnOverOrderIds,
+      updatedAt: Date.now()
+    }
+
+    await columnModel.updateCardOutColumn(
+      activeColumnId,
+      overColumnId,
+      newUpdateActiveColumn,
+      newUpdateOverColumn)
+    await cardModel.updateCard(overColumnId, activeCardId)
+  } catch (error) {throw error}
+}
+export const columnService = { createNew, updateColumn, updateCardOutColumn }

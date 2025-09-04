@@ -18,6 +18,9 @@ const COLUMN_COLLECTION_SCHEMA = Joi.object({
   updatedAt: Joi.date().timestamp('javascript').default(null),
   _destroy: Joi.boolean().default(false)
 })
+
+const INVALID_UPDATE_FIELDS = ['_id', 'boardId', 'createdAt']
+
 const validateBeforeCreate = async (data) => {
   return await COLUMN_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
@@ -58,10 +61,64 @@ const pushCardOrderIds = async (card) => {
     return result
   } catch (error) {throw new Error(error)}
 }
+
+const updateColumn = async (columnId, newColumnData) => {
+  Object.keys(newColumnData).forEach(fieldName => {
+    if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
+      delete newColumnData[fieldName]
+    }
+  })
+  try {
+    const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).findOneAndUpdate(
+      {
+        _id: ObjectId.createFromHexString(columnId)
+      },
+      {
+        $set: newColumnData
+      },
+      {
+        upsert: false,
+        returnDocument: 'after'
+      }
+    )
+    return result
+  } catch (error) {throw new Error(error)}
+}
+const updateCardOutColumn = async (activeColumnId, overColumnId, newUpdateActiveColumn, newUpdateOverColumn) => {
+  Object.keys(newUpdateActiveColumn).forEach(fieldName => {
+    if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
+      delete newUpdateActiveColumn[fieldName]
+    }
+  })
+  Object.keys(newUpdateOverColumn).forEach(fieldName => {
+    if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
+      delete newUpdateOverColumn[fieldName]
+    }
+  })
+  try {
+    const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).bulkWrite([
+      {
+        updateOne: {
+          filter: { _id: ObjectId.createFromHexString(activeColumnId) },
+          update: { $set: newUpdateActiveColumn }
+        }
+      },
+      {
+        updateOne: {
+          filter: { _id: ObjectId.createFromHexString(overColumnId) },
+          update: { $set: newUpdateOverColumn }
+        }
+      }
+    ])
+    return result
+  } catch (error) {throw new Error(error)}
+}
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
   createNew,
   findOneById,
-  pushCardOrderIds
+  pushCardOrderIds,
+  updateColumn,
+  updateCardOutColumn
 }
