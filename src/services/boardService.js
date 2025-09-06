@@ -44,16 +44,18 @@ const getDetails = async (boardId) => {
 
     //Xóa mảng Cards khỏi board ban đầu
     delete boardClone.cards
+    boardClone.columns = boardClone.columns.filter(column => column._destroy != true)
     return boardClone
   } catch (error) {throw error}
 }
 
+// Cập nhật lại thứ cự của column trong board khi kéo column
 const update = async (boardId, reqBody) => {
-  const newColumnData = {
-    ...reqBody,
-    updatedAt: Date.now()
-  }
   try {
+    const newColumnData = {
+      ...reqBody,
+      updatedAt: Date.now()
+    }
     const resUpdateColumn = boardModel.update(boardId, newColumnData)
     return resUpdateColumn
   } catch (error) {throw error }

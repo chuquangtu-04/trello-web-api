@@ -60,6 +60,7 @@ const updateCard = async (overColumnId, activeCardId) => {
   } catch (error) {throw new Error(error)}
 }
 
+
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,

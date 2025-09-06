@@ -14,4 +14,8 @@ Router.route('/moving_card')
 Router.route('/:id')
   .put(columnValidation.updateColumn, columnController.updateColumn)
 
+// Xóa mềm column
+Router.route('/soft-delete')
+  .patch(columnValidation.softDeleteColumn, columnController.softDeleteColumn)
+
 export const columnRouter = Router
