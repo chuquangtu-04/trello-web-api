@@ -27,6 +27,7 @@ const validateBeforeCreate = async (data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
 
+// Tạo board
 const createNew = async (data) => {
   try {
     const validateData = await validateBeforeCreate(data)
@@ -34,6 +35,7 @@ const createNew = async (data) => {
     return createBoard
   } catch (error) {throw new Error(error)}
 }
+// Tìm trả về board
 const findOneById = async (id) => {
   try {
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({
@@ -100,11 +102,11 @@ const update = async (boardId, newColumnData) => {
         delete newColumnData[fieldName]
       }
     })
-    // const newColumn = dataColumnUpdate.data.map(c => ObjectId.createFromHexString(c))
+    const newColumn = newColumnData.columnOrderIds.map(c => ObjectId.createFromHexString(c))
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: ObjectId.createFromHexString(boardId) },
       {
-        $set: newColumnData
+        $set: { columnOrderIds: newColumn }
       },
       {
         upsert: false,

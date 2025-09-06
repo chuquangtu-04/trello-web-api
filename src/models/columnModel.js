@@ -62,7 +62,9 @@ const pushCardOrderIds = async (card) => {
   } catch (error) {throw new Error(error)}
 }
 
+// Sắp xếp lại thứ tự của column bằng cách cập nhật columnOrderIds
 const updateColumn = async (columnId, newColumnData) => {
+  newColumnData.cardOrderIds = newColumnData.cardOrderIds.map(c => ObjectId.createFromHexString(c))
   Object.keys(newColumnData).forEach(fieldName => {
     if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
       delete newColumnData[fieldName]
@@ -85,6 +87,8 @@ const updateColumn = async (columnId, newColumnData) => {
   } catch (error) {throw new Error(error)}
 }
 const updateCardOutColumn = async (activeColumnId, overColumnId, newUpdateActiveColumn, newUpdateOverColumn) => {
+  newUpdateActiveColumn.cardOrderIds = newUpdateActiveColumn.cardOrderIds.map(c => ObjectId.createFromHexString(c))
+  newUpdateOverColumn.cardOrderIds = newUpdateOverColumn.cardOrderIds.map(c => ObjectId.createFromHexString(c))
   Object.keys(newUpdateActiveColumn).forEach(fieldName => {
     if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
       delete newUpdateActiveColumn[fieldName]
@@ -113,6 +117,24 @@ const updateCardOutColumn = async (activeColumnId, overColumnId, newUpdateActive
     return result
   } catch (error) {throw new Error(error)}
 }
+// Xóa mềm column
+const softDeleteColumn = async (columnId, updateData) => {
+  try {
+    const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).findOneAndUpdate(
+      {
+        _id: ObjectId.createFromHexString(columnId)
+      },
+      {
+        $set: updateData
+      },
+      {
+        upsert: false,
+        returnDocument: 'after'
+      }
+    )
+    return result
+  } catch (error) {throw new Error(error)}
+}
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
@@ -120,5 +142,6 @@ export const columnModel = {
   findOneById,
   pushCardOrderIds,
   updateColumn,
-  updateCardOutColumn
+  updateCardOutColumn,
+  softDeleteColumn
 }

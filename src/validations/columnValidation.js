@@ -57,4 +57,19 @@ const updateCardOutColumn = async (req, res, next) => {
   }
 }
 
-export const columnValidation = { createNew, updateColumn, updateCardOutColumn }
+// Xóa mềm column
+const softDeleteColumn = async (req, res, next) => {
+  const correctCondition = Joi.object({
+    columnId: Joi.string().required().pattern(OBJECT_ID_RULE).message({ 'string.pattern.base':  OBJECT_ID_RULE_MESSAGE_MOVING_CARD('columnId') })
+  })
+  try {
+    await correctCondition.validateAsync(req.body, { abortEarly: false })
+    next()
+  } catch (error) {
+    const errorMessage = new Error(error).message
+    const customError = new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, errorMessage)
+    next(customError)
+  }
+}
+
+export const columnValidation = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn }

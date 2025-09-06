@@ -13,7 +13,6 @@ const createNew = async (reqBody) => {
     if (getNewColumn) {
       getNewColumn.cards = []
     }
-
     // Cập nhật mảng columnOrderIds trong collection boards
     await boardModel.pushColumnOrderIds(getNewColumn)
     return getNewColumn
@@ -54,4 +53,16 @@ const updateCardOutColumn = async (reqBody) => {
     await cardModel.updateCard(overColumnId, activeCardId)
   } catch (error) {throw error}
 }
-export const columnService = { createNew, updateColumn, updateCardOutColumn }
+
+// Xóa mềm column
+const softDeleteColumn = async (reqBody) => {
+  try {
+    const softColumnData = {
+      _destroy: true,
+      updatedAt: Date.now()
+    }
+    await columnModel.softDeleteColumn(reqBody.columnId, softColumnData)
+    return 'Delete success!'
+  } catch (error) {throw error}
+}
+export const columnService = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn }

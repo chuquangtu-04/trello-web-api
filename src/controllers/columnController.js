@@ -20,6 +20,12 @@ const updateCardOutColumn = async (req, res, next) => {
     res.status(StatusCodes.CREATED).json(updateCardOutColumn)
   } catch (error) {next(error)}
 }
+// Xóa mềm column
+const softDeleteColumn = async (req, res, next) => {
+  try {
+    const softDeleteColumn = await columnService.softDeleteColumn(req.body)
+    res.status(StatusCodes.CREATED).json(softDeleteColumn)
+  } catch (error) {next(error)}
+}
 
-
-export const columnController = { createNew, updateColumn, updateCardOutColumn }
+export const columnController = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn }
