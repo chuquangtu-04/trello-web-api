@@ -27,5 +27,13 @@ const softDeleteColumn = async (req, res, next) => {
     res.status(StatusCodes.CREATED).json(softDeleteColumn)
   } catch (error) {next(error)}
 }
+// Khôi phục column
+const restoreColumns = async (req, res, next) => {
+  try {
+    const columnId = req.params.id
+    const restoreColumns = await columnService.restoreColumns(columnId, req.body)
+    res.status(StatusCodes.CREATED).json(restoreColumns)
+  } catch (error) {next(error)}
+}
 
-export const columnController = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn }
+export const columnController = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn, restoreColumns }

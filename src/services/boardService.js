@@ -60,4 +60,23 @@ const update = async (boardId, reqBody) => {
     return resUpdateColumn
   } catch (error) {throw error }
 }
-export const boardService = { createNew, getDetails, update }
+
+const getBoardDetailsSoftColumn = async (boardId) => {
+  try {
+    const resBoard = await boardModel.getDetails(boardId)
+    if (!resBoard) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Board Not Found!')
+    }
+    const boardClone = cloneDeep(resBoard)
+    boardClone.columns.forEach(column => {
+      column.cards = boardClone.cards.filter( card => card.columnId.equals(column._id))
+
+    })
+    delete boardClone.cards
+
+    // Xử lý lấy về nhưng column có _destroy = true là nhưng column được xóa mềm
+    boardClone.columns = boardClone.columns.filter(column => column._destroy === true)
+    return boardClone}
+  catch (error) {throw error}
+}
+export const boardService = { createNew, getDetails, update, getBoardDetailsSoftColumn }

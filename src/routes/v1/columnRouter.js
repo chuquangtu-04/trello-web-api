@@ -18,4 +18,7 @@ Router.route('/:id')
 Router.route('/soft-delete')
   .patch(columnValidation.softDeleteColumn, columnController.softDeleteColumn)
 
+// Khôi phục column
+Router.route('/restore-columns/:id')
+  .patch(columnValidation.restoreColumns, columnController.restoreColumns)
 export const columnRouter = Router
