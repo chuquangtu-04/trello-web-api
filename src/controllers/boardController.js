@@ -19,6 +19,14 @@ const getDetails = async (req, res, next) => {
   } catch (error) {next(error)}
 }
 
+const getBoardDetailsSoftColumn = async (req, res, next) => {
+  try {
+    const boardId = req.params.id
+    const board = await boardService.getBoardDetailsSoftColumn(boardId)
+    res.status(StatusCodes.OK).json(board)
+  } catch (error) {next(error)}
+}
+
 const update = async (req, res, next) => {
   try {
     const boardId = req.params.id
@@ -29,4 +37,4 @@ const update = async (req, res, next) => {
 }
 
 
-export const boardController = { createNew, getDetails, update }
+export const boardController = { createNew, getDetails, update, getBoardDetailsSoftColumn }

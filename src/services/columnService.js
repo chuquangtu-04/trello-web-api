@@ -62,7 +62,19 @@ const softDeleteColumn = async (reqBody) => {
       updatedAt: Date.now()
     }
     await columnModel.softDeleteColumn(reqBody.columnId, softColumnData)
-    return 'Delete success!'
+    return { 'message' : 'Column and tag were successfully deleted' }
   } catch (error) {throw error}
 }
-export const columnService = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn }
+
+// Khôi phục column
+const restoreColumns = async (columnId, reqBody) => {
+  try {
+    const restoreColumns = {
+      ...reqBody,
+      updatedAt: Date.now()
+    }
+    await columnModel.restoreColumns(columnId, restoreColumns)
+    return { 'message' : 'You have successfully restored!' }
+  } catch (error) {throw error}
+}
+export const columnService = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn, restoreColumns }

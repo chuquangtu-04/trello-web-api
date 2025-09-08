@@ -15,4 +15,8 @@ Router.route('/:id')
   .get(boardController.getDetails)
   .put(boardValidation.update, boardController.update)
 
+// Gọi APi trả về nhưng column xóa mềm
+Router.route('/boards-soft-column/:id')
+  .get(boardController.getBoardDetailsSoftColumn)
+
 export const boardRouter = Router

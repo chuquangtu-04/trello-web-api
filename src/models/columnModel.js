@@ -1,4 +1,4 @@
-import Joi, { object } from 'joi'
+import Joi from 'joi'
 import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
@@ -135,6 +135,25 @@ const softDeleteColumn = async (columnId, updateData) => {
     return result
   } catch (error) {throw new Error(error)}
 }
+
+// Khôi phục column
+const restoreColumns = async (columnId, updateData) => {
+  try {
+    const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).findOneAndUpdate(
+      {
+        _id: ObjectId.createFromHexString(columnId)
+      },
+      {
+        $set: updateData
+      },
+      {
+        upsert: false,
+        returnDocument: 'after'
+      }
+    )
+    return result
+  } catch (error) {throw new Error(error)}
+}
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
@@ -143,5 +162,6 @@ export const columnModel = {
   pushCardOrderIds,
   updateColumn,
   updateCardOutColumn,
-  softDeleteColumn
+  softDeleteColumn,
+  restoreColumns
 }
