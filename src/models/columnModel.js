@@ -154,6 +154,18 @@ const restoreColumns = async (columnId, updateData) => {
     return result
   } catch (error) {throw new Error(error)}
 }
+
+// Xóa vĩnh viễn column
+const hardDeleteColumn = async (columnId) => {
+  try {
+    const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).deleteOne(
+      {
+        _id: ObjectId.createFromHexString(columnId)
+      }
+    )
+    return result
+  } catch (error) {throw new Error(error)}
+}
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
@@ -163,5 +175,6 @@ export const columnModel = {
   updateColumn,
   updateCardOutColumn,
   softDeleteColumn,
-  restoreColumns
+  restoreColumns,
+  hardDeleteColumn
 }
