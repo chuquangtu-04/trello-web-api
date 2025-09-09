@@ -18,9 +18,18 @@ const START_SERVER = () => {
   // Middleware xử lý lỗi tập trung
   app.use(errorHandlingMiddleware)
 
-  app.listen(env.APP_PORT, env.APP_HOST, () => {
-    console.log(`Hello ${env.AUTHOR} I am running at ${ env.APP_HOST }:${ env.APP_PORT }`)
-  })
+  // Môi trường Production (cụ thể hiện tại là đang support Render.com)
+  if (env.BUILD_MODE === 'production') {
+    app.listen(process.env.PORT, () => {
+      console.log(`Hello ${env.AUTHOR} I am running at ${ process.env.PORT } on Production`)
+    })
+  } else {
+    // Môi trường localhost
+    app.listen(env.LOCAL_DEV_APP_PORT, env.APP_HOST, () => {
+      console.log(`Hello ${env.AUTHOR} I am running at ${ env.APP_HOST }:${ env.LOCAL_DEV_APP_PORT } on Local Dev`)
+    })
+  }
+
 
   // Thực hiện các tác vụ cleanup trước khi dừng server
   // Đọc thêm ở đây: https://stackoverflow.com/q/14031763/8324172
