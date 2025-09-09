@@ -36,4 +36,13 @@ const restoreColumns = async (req, res, next) => {
   } catch (error) {next(error)}
 }
 
-export const columnController = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn, restoreColumns }
+// Xóa vĩnh viễn column
+const hardDeleteColumn = async (req, res, next) => {
+  try {
+    const columnId = req.params.id
+    const hardDeleteColumn = await columnService.hardDeleteColumn(columnId)
+    res.status(StatusCodes.CREATED).json(hardDeleteColumn)
+  } catch (error) {next(error)}
+}
+
+export const columnController = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn, restoreColumns, hardDeleteColumn }

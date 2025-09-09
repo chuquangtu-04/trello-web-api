@@ -60,11 +60,23 @@ const updateCard = async (overColumnId, activeCardId) => {
   } catch (error) {throw new Error(error)}
 }
 
+// Xóa cards trong column
+const hardDeleteCard = async (columnId) => {
+  try {
+    const result = await GET_DB().collection(CARD_COLLECTION_NAME).deleteMany(
+      {
+        columnId: ObjectId.createFromHexString(columnId)
+      }
+    )
+    return result
+  } catch (error) {throw new Error(error)}
+}
 
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
   createNew,
   findOneById,
-  updateCard
+  updateCard,
+  hardDeleteCard
 }

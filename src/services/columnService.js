@@ -2,6 +2,8 @@
 import { boardModel } from '~/models/boardModel'
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
+import ApiError from '~/utils/ApiError'
+import { StatusCodes } from 'http-status-codes'
 const createNew = async (reqBody) => {
   try {
     const newColumn = {
@@ -77,4 +79,23 @@ const restoreColumns = async (columnId, reqBody) => {
     return { 'message' : 'You have successfully restored!' }
   } catch (error) {throw error}
 }
-export const columnService = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn, restoreColumns }
+
+// Xóa vĩnh viễn column
+const hardDeleteColumn = async (columnId) => {
+  try {
+    const targetColumn = await columnModel.findOneById(columnId)
+    if (!targetColumn) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Board Not Found!')
+    }
+    // Loại bỏ columnId trong ColumnOrderIds sao khi đã bị xóa vĩnh viễn
+    await boardModel.pullColumnOrderIds(targetColumn)
+
+    // Xóa vĩnh viễn colun
+    await columnModel.hardDeleteColumn(columnId)
+
+    // Xóa vĩnh viễn card
+    await cardModel.hardDeleteCard(columnId)
+    return { 'message' : 'You have successfully deleted!' }
+  } catch (error) {throw error}
+}
+export const columnService = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn, restoreColumns, hardDeleteColumn }
