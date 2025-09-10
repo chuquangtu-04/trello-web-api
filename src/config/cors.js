@@ -3,7 +3,7 @@ import { env } from '~/config/environment'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError'
 
-// Cấu hình CORS Option trong dự án thực tế (Video số 62 trong chuỗi MERN Stack Pro)
+// Cấu hình CORS Option trong dự án thực tế
 export const corsOptions = {
   origin: function (origin, callback) {
 
