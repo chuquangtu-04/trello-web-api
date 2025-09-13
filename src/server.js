@@ -26,7 +26,7 @@ const START_SERVER = () => {
   } else {
     // Môi trường localhost
     app.listen(env.LOCAL_DEV_APP_PORT, env.APP_HOST, () => {
-      console.log(`Hello ${env.AUTHOR} I am running at ${ env.APP_HOST }:${ env.LOCAL_DEV_APP_PORT } on Local Dev`)
+      console.log(`Hello ${env.AUTHOR} I am running at ${ env.LOCAL_DEV_APP_HOST }:${ env.LOCAL_DEV_APP_PORT } on Local Dev`)
     })
   }
 
