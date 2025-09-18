@@ -93,13 +93,14 @@ const login = async (reqBody) => {
 
     // Nếu mọi thứ ok thì bắt đầu tạo Tokens đăng nhập để trả về cho phía FE
     // Tạo thông tin để đính kèm trong JWT Token bao gồm _id và email của user
-    const userInfo = { _id: existUser.id, email: existUser.email }
+    const userInfo = { _id: existUser._id, email: existUser.email }
 
     // Tạo ra 2 loại token, accessToken và refreshToken để trả về cho phía FE
     const accessToken = await JwtProvider.generateToken(
       userInfo,
       env.ACCESS_TOKEN_SECRET_SIGNATURE,
       env.ACCESS_TOKEN_LIFE
+      // 5 // 5 giây
     )
     const refreshToken = await JwtProvider.generateToken(
       userInfo,
