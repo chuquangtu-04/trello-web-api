@@ -1,29 +1,30 @@
 import express from 'express'
 import { columnValidation } from '~/validations/columnValidation'
 import { columnController } from '~/controllers/columnController'
+import { authMiddleware } from '~/middlewares/authMiddlewares'
 const Router = express.Router()
 
 Router.route('/')
-  .post(columnValidation.createNew, columnController.createNew)
+  .post(authMiddleware.isAuthorized, columnValidation.createNew, columnController.createNew)
 
 // Di chuyển Card ngoài column
 Router.route('/moving_card')
-  .put(columnValidation.updateCardOutColumn, columnController.updateCardOutColumn)
+  .put(authMiddleware.isAuthorized, columnValidation.updateCardOutColumn, columnController.updateCardOutColumn)
 
 // Di chuyển card trong cùng 1 column
 Router.route('/:id')
-  .put(columnValidation.updateColumn, columnController.updateColumn)
+  .put(authMiddleware.isAuthorized, columnValidation.updateColumn, columnController.updateColumn)
 
 // Xóa mềm column
 Router.route('/soft-delete')
-  .patch(columnValidation.softDeleteColumn, columnController.softDeleteColumn)
+  .patch(authMiddleware.isAuthorized, columnValidation.softDeleteColumn, columnController.softDeleteColumn)
 
 // Khôi phục column
 Router.route('/restore-columns/:id')
-  .patch(columnValidation.restoreColumns, columnController.restoreColumns)
+  .patch(authMiddleware.isAuthorized, columnValidation.restoreColumns, columnController.restoreColumns)
 
 // Xóa vĩnh viên column
 Router.route('/hard-delete/:id')
-  .delete(columnValidation.hardDeleteColumn, columnController.hardDeleteColumn)
+  .delete(authMiddleware.isAuthorized, columnValidation.hardDeleteColumn, columnController.hardDeleteColumn)
 
 export const columnRouter = Router
