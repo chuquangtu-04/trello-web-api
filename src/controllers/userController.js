@@ -1,6 +1,7 @@
 import { userService } from '~/services/userService'
 import { StatusCodes } from 'http-status-codes'
 import ms from 'ms'
+import ApiError from '~/utils/ApiError'
 const createNew = async (req, res, next) => {
   try {
     const createdUser = await userService.createNew(req.body)
@@ -18,7 +19,6 @@ const verifyAccount = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const result = await userService.login(req.body)
-    console.log('🚀 ~ login ~ result:', result)
     /**
  * Xử lý trả về http only cookie cho phía trình duyệt
  * Về cái maxAge và thư viện ms: https://expressjs.com/en/api.html
@@ -41,4 +41,32 @@ const login = async (req, res, next) => {
     res.status(StatusCodes.OK).json(result)
   } catch (error) {next(error)}
 }
-export const userController = { createNew, verifyAccount, login }
+
+const logout = async (req, res, next) => {
+  try {
+    // Xóa cookie - đơn giản là làm ngược lại so với việc gán cookie ở hàm login
+    res.clearCookie('accessToken')
+    res.clearCookie('refreshToken')
+
+    res.status(StatusCodes.OK).json({ loggedOut: true })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const refreshToken = async (req, res, next) => {
+  try {
+    const result = await userService.refreshToken(req.cookies?.refreshToken)
+
+    res.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      maxAge: ms('14 days')
+    })
+    res.status(StatusCodes.OK).json(result)
+  } catch (error) {
+    next(new ApiError(StatusCodes.FORBIDDEN, 'Please Sign In! (Error from refresh Token)'))
+  }
+}
+export const userController = { createNew, verifyAccount, login, logout, refreshToken }
