@@ -135,11 +135,42 @@ const refreshToken = async (clientRefreshToken) => {
     const accessToken = await JwtProvider.generateToken(
       userInfo,
       env.ACCESS_TOKEN_SECRET_SIGNATURE,
-      5 //giây để test accessToken hết hạn
-      // env.ACCESS_TOKEN_LIFE // 1 tiếng
+      // 5 //giây để test accessToken hết hạn
+      env.ACCESS_TOKEN_LIFE // 1 tiếng
     )
 
     return { accessToken }
+  } catch (error) {
+    throw error
+  }
+}
+
+const update = async (userId, reqBody) => {
+  try {
+    // Query User và kiểm tra cho chắc chắn
+    const existUser = await userModel.findOneById(userId)
+    if (!existUser) throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+    if (!existUser.isActive) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your account is not active!')
+
+    // Khởi tạo kết quả update User ban đầu là empty
+    let updatedUser = {}
+
+    // Trường change password
+    if ( reqBody.current_password && reqBody.new_password ) {
+      // Kiểm tra xem cái current có đúng hay không
+      if (!bcryptjs.compareSync(reqBody.current_password, existUser.password)) {
+        throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your current password is incorrect!')
+      }
+      // Nếu như current đúng thì chúng ta sẽ hash mất khẩu mới và update lại vào DB
+      updatedUser = await userModel.update(userId,
+        {
+          password: bcryptjs.hashSync(reqBody.new_password, 8)
+        })
+    } else {
+      // Trường hợp update các thông tin chung, ví dụ như displayName
+      updatedUser = await userModel.update(userId, reqBody)
+    }
+    return pickUser(updatedUser)
   } catch (error) {
     throw error
   }
@@ -149,5 +180,6 @@ export const userService = {
   createNew,
   verifyAccount,
   login,
-  refreshToken
+  refreshToken,
+  update
 }
