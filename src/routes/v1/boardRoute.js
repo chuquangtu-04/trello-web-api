@@ -1,14 +1,11 @@
 import express from 'express'
-import { StatusCodes } from 'http-status-codes'
-import { boardValidation } from '~/validations/boardValidation'
 import { boardController } from '~/controllers/boardController'
 import { authMiddleware } from '~/middlewares/authMiddlewares'
+import { boardValidation } from '~/validations/boardValidation'
 const Router = express.Router()
 
 Router.route('/')
-  .get(authMiddleware.isAuthorized, (req, res) => {
-    res.status(StatusCodes.OK).json({ message: 'GET: API get list boards', code: StatusCodes.OK })
-  })
+  .get(authMiddleware.isAuthorized, boardController.getBoards)
   // Lần lượt chạy boardValidation.createNew khi nó chạy, validation xong nó next thì chạy tiếp boardController.createNew
   .post(authMiddleware.isAuthorized, boardValidation.createNew, boardController.createNew)
 
