@@ -4,6 +4,7 @@ import { boardModel } from '~/models/boardModel'
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep } from 'lodash'
+import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '~/utils/constants'
 
 const createNew = async (reqBody) => {
   try {
@@ -21,7 +22,7 @@ const createNew = async (reqBody) => {
     // Làm thêm các xử lý logic khác với các collection khác tùy đặc thù dự án
     // Bắn email, Notification về cho admin khi có 1 board mới được tạo
 
-    // Trả kết quả về, trong service luôn phải có return 
+    // Trả kết quả về, trong service luôn phải có return
     return getNewBoard
   } catch (error) {throw error}
 }
@@ -79,4 +80,18 @@ const getBoardDetailsSoftColumn = async (boardId) => {
     return boardClone}
   catch (error) {throw error}
 }
-export const boardService = { createNew, getDetails, update, getBoardDetailsSoftColumn }
+
+const getBoards = async (userId, page, itemsPerPage) => {
+  try {
+    // Nếu không tồn tại page hoặc itemsPerPage từ phía FE thì BE sẽ cần phải luôn gắn giá trị mặc định
+    if (!page) page = DEFAULT_PAGE
+    if (!itemsPerPage) itemsPerPage = DEFAULT_ITEMS_PER_PAGE
+
+    const results = await boardModel.getBoards(userId, parseInt(page, 10), parseInt(itemsPerPage, 10))
+    return results
+
+  } catch (error) {
+    throw error
+  }
+}
+export const boardService = { createNew, getDetails, update, getBoardDetailsSoftColumn, getBoards }
