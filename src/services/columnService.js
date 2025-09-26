@@ -21,13 +21,13 @@ const createNew = async (reqBody) => {
   } catch (error) {throw error}
 }
 
-const updateColumn = async (columnId, reqBody) => {
+const updateColumn = async (columnId, reqBody, fieldName) => {
   try {
     const newColumnData = {
       ...reqBody,
       updatedAt: Date.now()
     }
-    const updateColumn = await columnModel.updateColumn(columnId, newColumnData)
+    const updateColumn = await columnModel.updateColumn(columnId, newColumnData, fieldName )
     return updateColumn
   } catch (error) {throw error}
 }

@@ -10,7 +10,8 @@ const createNew = async (req, res, next) => {
 const updateColumn = async (req, res, next) => {
   try {
     const columnId = req.params.id
-    const updateColumn = await columnService.updateColumn(columnId, req.body)
+    const fieldName = req.body.fieldName
+    const updateColumn = await columnService.updateColumn(columnId, req.body, fieldName)
     res.status(StatusCodes.CREATED).json(updateColumn)
   } catch (error) {next(error)}
 }

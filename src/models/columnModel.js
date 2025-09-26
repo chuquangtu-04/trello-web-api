@@ -63,8 +63,10 @@ const pushCardOrderIds = async (card) => {
 }
 
 // Sắp xếp lại thứ tự của column bằng cách cập nhật columnOrderIds
-const updateColumn = async (columnId, newColumnData) => {
-  newColumnData.cardOrderIds = newColumnData.cardOrderIds.map(c => ObjectId.createFromHexString(c))
+const updateColumn = async (columnId, newColumnData, fieldName) => {
+  if (fieldName !== 'title') {
+    newColumnData.cardOrderIds = newColumnData.cardOrderIds.map(c => ObjectId.createFromHexString(c))
+  }
   Object.keys(newColumnData).forEach(fieldName => {
     if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
       delete newColumnData[fieldName]

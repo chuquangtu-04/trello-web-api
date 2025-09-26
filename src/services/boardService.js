@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 import { cloneDeep } from 'lodash'
 import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '~/utils/constants'
 
-const createNew = async (reqBody) => {
+const createNew = async (userId, reqBody) => {
   try {
     // Xử lý logic tùy đặc thù dự án
     const newBoard = {
@@ -14,7 +14,7 @@ const createNew = async (reqBody) => {
       slug: slugify(reqBody.title)
     }
     // Gọi tới tầng model để xử lý lưu bản ghi newBoard vào database
-    const createBoard = await boardModel.createNew(newBoard)
+    const createBoard = await boardModel.createNew(userId, newBoard)
 
     // Lấy bản ghi board sau khi gọi (tùy mục đích dự án mà có cần bước này không)
     const getNewBoard = await boardModel.findOneById(createBoard.insertedId.toString())
@@ -26,9 +26,9 @@ const createNew = async (reqBody) => {
     return getNewBoard
   } catch (error) {throw error}
 }
-const getDetails = async (boardId) => {
+const getDetails = async (userId, boardId) => {
   try {
-    const resBoard = await boardModel.getDetails(boardId)
+    const resBoard = await boardModel.getDetails(userId, boardId)
     if (!resBoard) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Board Not Found!')
     }
@@ -62,9 +62,9 @@ const update = async (boardId, reqBody) => {
   } catch (error) {throw error }
 }
 
-const getBoardDetailsSoftColumn = async (boardId) => {
+const getBoardDetailsSoftColumn = async (userId, boardId) => {
   try {
-    const resBoard = await boardModel.getDetails(boardId)
+    const resBoard = await boardModel.getDetails(userId, boardId)
     if (!resBoard) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Board Not Found!')
     }
