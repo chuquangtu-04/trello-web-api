@@ -6,4 +6,12 @@ const createNew = async (req, res, next) => {
     res.status(StatusCodes.CREATED).json(createCard)
   } catch (error) {next(error)}
 }
-export const cardController = { createNew }
+
+const updateCard = async (req, res, next) => {
+  try {
+    const cardId = req.params.id
+    const updateCard = await cardService.updateCard(cardId, req.body)
+    res.status(StatusCodes.CREATED).json(updateCard)
+  } catch (error) {next(error)}
+}
+export const cardController = { createNew, updateCard }
