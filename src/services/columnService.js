@@ -52,7 +52,7 @@ const updateCardOutColumn = async (reqBody) => {
       overColumnId,
       newUpdateActiveColumn,
       newUpdateOverColumn)
-    await cardModel.updateCard(overColumnId, activeCardId)
+    await cardModel.updateCardOutColumn(overColumnId, activeCardId)
   } catch (error) {throw error}
 }
 
