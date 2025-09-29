@@ -10,7 +10,8 @@ const createNew = async (req, res, next) => {
 const updateCard = async (req, res, next) => {
   try {
     const cardId = req.params.id
-    const updateCard = await cardService.updateCard(cardId, req.body)
+    const cardCoverFile = req.file
+    const updateCard = await cardService.updateCard(cardId, req.body, cardCoverFile)
     res.status(StatusCodes.CREATED).json(updateCard)
   } catch (error) {next(error)}
 }
