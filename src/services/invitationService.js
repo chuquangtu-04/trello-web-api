@@ -6,6 +6,7 @@ import { boardModel } from '~/models/boardModel'
 import { invitationModel } from '~/models/invitationModel'
 import { INVITATION_TYPES, BOARD_INVITATION_STATUS } from '~/utils/constants'
 import { pickUser } from '~/utils/formatter'
+import { cloneDeep } from 'lodash'
 
 const createNewBoardInvitation = async (reqBody, inviterId) => {
   try {
@@ -52,6 +53,30 @@ const createNewBoardInvitation = async (reqBody, inviterId) => {
   }
 }
 
+const getInvitations = async (userId) => {
+  try {
+    const getInvitations = await invitationModel.findByUser(userId)
+
+    // Vì các dữ liệu inviter, invitee và board là đang ở giá trị mảng 1 phần tử
+    // nếu lấy ra được nên chúng ta biến đổi nó về Json Object trước khi trả về.
+    // const resInvitation = cloneDeep(getInvitations)
+    // resInvitation.forEach(info => {
+    //   info.inviterId = info.inviterId[0] || {},
+    //   info.inviteeId = info.inviteeId[0] || {},
+    //   info.board = info.board[0] || {}
+    // })
+    const resInvitation = getInvitations.map(i => ({
+      ...i,
+      inviterId: i.inviterId[0] || {},
+      inviteeId: i.inviteeId[0] || {},
+      board: i.board[0] || {}
+    }))
+    return resInvitation
+  } catch (error) {
+    throw error
+  }
+}
+
 export const invitationService = {
-  createNewBoardInvitation
+  createNewBoardInvitation, getInvitations
 }
