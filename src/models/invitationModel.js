@@ -3,6 +3,8 @@ import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { INVITATION_TYPES, BOARD_INVITATION_STATUS } from '~/utils/constants'
+import { boardModel } from './boardModel'
+import { userModel } from './userModel'
 
 // Define Collection (name & schema)
 const INVITATION_COLLECTION_NAME = 'invitations'
@@ -36,14 +38,14 @@ const createNewBoardInvitation = async (data) => {
       inviterId: new ObjectId(validData.inviterId),
       inviteeId: new ObjectId(validData.inviteeId)
     }
-    
+
     if (validData.boardInvitation) {
       newInvitationToAdd.boardInvitation = {
         ...validData.boardInvitation,
         boardId: new ObjectId(validData.boardInvitation.boardId)
       }
     }
-    
+
     const createdInvitation = await GET_DB()
       .collection(INVITATION_COLLECTION_NAME)
       .insertOne(newInvitationToAdd)
@@ -94,11 +96,54 @@ const update = async (invitationId, updateData) => {
     throw new Error(error)
   }
 }
+// Query tổng hợp (aggregate) để lấy những bản ghi invitation thuộc về một thằng user cụ thể
+const findByUser = async (userId) => {
+  try {
+    const queryConditions = [
+      { inviteeId: ObjectId.createFromHexString(userId) }, // Tìm theo inviteeId người được mời - chính
+      // là người đang thực hiện req này
+      { _destroy: false }
+    ]
+    const results = await GET_DB().collection(INVITATION_COLLECTION_NAME).aggregate(
+      [{ $match: { $and: queryConditions } },
+        {
+          $lookup: {
+            from: userModel.USER_COLLECTION_NAME,
+            localField: 'inviterId', // Người đi mời
+            foreignField: '_id',
+            as: 'inviterId',
+            pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
+          }
+        },
+        {
+          $lookup: {
+            from: userModel.USER_COLLECTION_NAME,
+            localField: 'inviteeId', // Người được mời
+            foreignField: '_id',
+            as: 'inviteeId',
+            pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
+          }
+        }
+        ,
+        {
+          $lookup: {
+            from: boardModel.BOARD_COLLECTION_NAME,
+            localField: 'boardInvitation.boardId', // Thông tin của board
+            foreignField: '_id',
+            as: 'board'
+          }
+        }
+      ]
+    ).toArray()
+    return results
+  } catch (error) {throw new Error(error)}
+}
 
 export const invitationModel = {
   INVITATION_COLLECTION_NAME,
   INVITATION_COLLECTION_SCHEMA,
   createNewBoardInvitation,
   findOneById,
-  update
+  update,
+  findByUser
 }

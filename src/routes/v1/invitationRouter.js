@@ -10,5 +10,11 @@ Router.route('/board')
     invitationValidation.createNewBoardInvitation,
     invitationController.createNewBoardInvitation
   )
+Router.route('/')
+// lấy invitation theo user
+  .get(
+    authMiddleware.isAuthorized,
+    invitationController.getInvitations
+  )
 
 export const invitationRouter = Router
