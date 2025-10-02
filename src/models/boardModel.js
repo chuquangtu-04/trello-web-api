@@ -211,6 +211,42 @@ const getBoards = async (userId, page, itemsPerPage) => {
   } catch (error) {throw new Error(error)}
 }
 
+const pushMembersIds = async (boardId, data) => {
+  try {
+    Object.keys(data).forEach(fieldName => {
+      if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
+        delete data[fieldName]
+      }
+    })
+    let newDataUpdate = {}
+    if (data.ownerIds && data.memberIds) {
+      newDataUpdate = {
+        ownerIds: data.ownerIds,
+        memberIds: data.memberIds
+      }
+    } else if (data.ownerIds) {
+      newDataUpdate = {
+        ownerIds: data.ownerIds
+      }
+    } else {
+      newDataUpdate = {
+        memberIds: data.memberIds
+      }
+    }
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: ObjectId.createFromHexString(boardId) },
+      {
+        $push: newDataUpdate
+      },
+      {
+        upsert: false,
+        returnDocument: 'after'
+      }
+    )
+    return result
+  } catch (error) {throw new Error(error)}
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
@@ -221,5 +257,6 @@ export const boardModel = {
   pushColumnOrderIds,
   update,
   pullColumnOrderIds,
-  getBoards
+  getBoards,
+  pushMembersIds
 }

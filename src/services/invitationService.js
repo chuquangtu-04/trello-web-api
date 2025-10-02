@@ -77,6 +77,43 @@ const getInvitations = async (userId) => {
   }
 }
 
+const updateInvitations = async (userId, invitationId, status) => {
+  try {
+    const getInvitation = await invitationModel.findOneById(invitationId)
+    if (!getInvitation) throw new ApiError(StatusCodes.NOT_FOUND, 'Invitation not found!')
+
+    // Sau khi có Invitation thì lấy full thông tin của board
+    const boardId = getInvitation.boardInvitation.boardId
+    const getBoard = await boardModel.findOneById(boardId.toString())
+    if (!getBoard) throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found!')
+
+    // Kiểm tra xem nếu status là ACCEPTED join board mà cái thằng user (invitee) đã là owner hoặc member của board rồi thì trả về thông báo lỗi luôn.
+    // Note: 2 mảng memberIds và ownerIds của board nó đang là kiểu dữ liệu ObjectId nên cho nó về String hết luôn để check
+    const updateData = {
+      boardInvitation : { status: status, boardId: boardId },
+      updatedAt: Date.now()
+    }
+    // const BE_allUsers = getBoard.memberIds.concat(getBoard.ownerIds)
+    const BE_allUsers = [...getBoard.memberIds, ...getBoard.ownerIds].toString()
+    if (status === BOARD_INVITATION_STATUS.ACCEPTED && BE_allUsers.includes(userId)) {
+      throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'You are on board')
+      // result = await invitationModel.update(invitationId, updateData)
+      // await boardModel.updateMemberOrOwner(boardId.toString(), { memberIds: userId })
+    }
+
+    // Bước 1: Cập nhật status trong bản ghi Invitation
+    const updateInvitation = await invitationModel.update(invitationId, updateData)
+    // Bước 2: Nếu trong trường hợp Accept một lời mời thành công, thì cần phải thêm thông tin của thằng user
+    // (userId) vào bản ghi memberIds trong collections board
+    if (updateInvitation.boardInvitation.status === BOARD_INVITATION_STATUS.ACCEPTED) {
+      await boardModel.pushMembersIds(boardId.toString(), { memberIds: userId })
+    }
+    return updateInvitation
+  } catch (error) {
+    throw error
+  }
+}
+
 export const invitationService = {
-  createNewBoardInvitation, getInvitations
+  createNewBoardInvitation, getInvitations, updateInvitations
 }
