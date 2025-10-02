@@ -74,14 +74,12 @@ const update = async (invitationId, updateData) => {
         delete updateData[fieldName]
       }
     })
-
     if (updateData.boardInvitation) {
       updateData.boardInvitation = {
-        ...updateData.boardInvitation,
-        boardId: new ObjectId(updateData.boardInvitation.boardId)
+        ...updateData.boardInvitation
+        // boardId: new ObjectId(updateData.boardInvitation.boardId)
       }
     }
-
     // (Phần còn lại có thể là thao tác cập nhật DB, nhưng không hiển thị trong ảnh)
     const result = await GET_DB()
       .collection(INVITATION_COLLECTION_NAME)
