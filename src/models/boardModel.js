@@ -221,16 +221,16 @@ const pushMembersIds = async (boardId, data) => {
     let newDataUpdate = {}
     if (data.ownerIds && data.memberIds) {
       newDataUpdate = {
-        ownerIds: data.ownerIds,
-        memberIds: data.memberIds
+        ownerIds: ObjectId.createFromHexString(data.ownerIds),
+        memberIds: ObjectId.createFromHexString(data.memberIds)
       }
     } else if (data.ownerIds) {
       newDataUpdate = {
-        ownerIds: data.ownerIds
+        ownerIds: ObjectId.createFromHexString(data.ownerIds)
       }
     } else {
       newDataUpdate = {
-        memberIds: data.memberIds
+        memberIds: ObjectId.createFromHexString(data.memberIds)
       }
     }
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
