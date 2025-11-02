@@ -1,4 +1,4 @@
-### Requirements - Thông tin của bộ Code Base này - Chuẩn các phiên bản dưới đây để bắt đầu học: (Semantic Versioning)
+(Semantic Versioning)
 * nodejs >= 18.16.0
 * npm = v9.8.1
 * yarn = v1.22.19
