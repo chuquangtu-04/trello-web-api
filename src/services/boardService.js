@@ -71,13 +71,14 @@ const getBoardDetailsSoftColumn = async (userId, boardId) => {
     const boardClone = cloneDeep(resBoard)
     boardClone.columns.forEach(column => {
       column.cards = boardClone.cards.filter( card => card.columnId.equals(column._id))
-
+      
     })
     delete boardClone.cards
-
+    
     // Xử lý lấy về nhưng column có _destroy = true là nhưng column được xóa mềm
     boardClone.columns = boardClone.columns.filter(column => column._destroy === true)
-    return boardClone}
+    console.log('🚀 ~ getBoardDetailsSoftColumn ~ boardClone:', boardClone)
+    return boardClone }
   catch (error) {throw error}
 }
 
