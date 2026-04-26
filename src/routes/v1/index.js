@@ -5,6 +5,7 @@ import { cardRouter } from './cardRouter'
 import { columnRouter } from './columnRouter'
 import { userRouter } from './userRoute'
 import { invitationRouter } from './invitationRouter'
+import { uploadRouter } from './uploadRoute'
 const Router = express.Router()
 
 // Check Api v1.status
@@ -21,5 +22,7 @@ Router.use('/cards', cardRouter)
 Router.use('/users', userRouter)
 // invitation APIs
 Router.use('/invitations', invitationRouter)
+// Upload image APIs
+Router.use('/upload', uploadRouter)
 
 export const APIs_v1 = Router
