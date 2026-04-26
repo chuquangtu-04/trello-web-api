@@ -13,6 +13,7 @@ import cookieParser from 'cookie-parser'
 import socketIo from 'socket.io'
 import http from 'http'
 import { inviteUserToBoardSocket } from './sockets/inviteUserToBoardSocket'
+import { updateCardSocket } from './sockets/updateCardSocket'
 
 const START_SERVER = () => {
   const app = express()
@@ -43,6 +44,7 @@ const START_SERVER = () => {
   io.on('connection', (socket) => {
     // Gọi các socket theo tính năng ở đây
     inviteUserToBoardSocket(socket)
+    updateCardSocket(socket)
   })
   // Môi trường Production (cụ thể hiện tại là đang support Render.com)
   if (env.BUILD_MODE === 'production') {

@@ -23,7 +23,8 @@ const createNew = async (req, res, next) => {
 const updateCard = async (req, res, next) => {
   const correctCondition = Joi.object({
     title: Joi.string().min(3).max(50).trim().strict(),
-    description: Joi.string().optional()
+    description: Joi.string().optional(),
+    completed: Joi.boolean().optional()
   })
   try {
     await correctCondition.validateAsync(req.body, { abortEarly: false, allowUnknown: true })
