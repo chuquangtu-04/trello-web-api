@@ -29,6 +29,12 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
     commentedAt: Joi.date().timestamp()
   }).default([]),
 
+  attachments: Joi.array().items({
+    url: Joi.string().required(),
+    fileName: Joi.string().required(),
+    addedAt: Joi.date().timestamp()
+  }).default([]),
+
 
   completed: Joi.boolean().default(false),
 
@@ -156,6 +162,27 @@ const updateMembers = async (cardId, incomingMemberInfo) => {
   }
 }
 
+const unshiftNewAttachment = async (cardId, attachmentData) => {
+  try {
+    const result = await GET_DB().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(cardId) },
+      { $push: { attachments: { $each: [attachmentData], $position: 0 } } },
+      { returnDocument: 'after' }
+    )
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
+const pullAttachment = async (cardId, attachmentUrl) => {
+  try {
+    const result = await GET_DB().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(cardId) },
+      { $pull: { attachments: { url: attachmentUrl } } },
+      { returnDocument: 'after' }
+    )
+    return result
+  } catch (error) { throw new Error(error) }
+}
 
 export const cardModel = {
   CARD_COLLECTION_NAME,
@@ -166,5 +193,7 @@ export const cardModel = {
   hardDeleteCard,
   updateCard,
   unShiftNewComment,
-  updateMembers
+  updateMembers,
+  unshiftNewAttachment,
+  pullAttachment
 }

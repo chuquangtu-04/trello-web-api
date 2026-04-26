@@ -43,6 +43,14 @@ const updateCard = async (cardId, reqBody, cardCoverFile, userInfo) => {
     } else if (newCardData.incomingMemberInfo) {
       // Trường hợp add or remove ra khỏi card
       updateCard = await cardModel.updateMembers(cardId, newCardData.incomingMemberInfo)
+    } else if (newCardData.newAttachmentToAdd) {
+      const attachmentData = {
+        ...newCardData.newAttachmentToAdd,
+        addedAt: Date.now()
+      }
+      updateCard = await cardModel.unshiftNewAttachment(cardId, attachmentData)
+    } else if (newCardData.attachmentToDelete) {
+      updateCard = await cardModel.pullAttachment(cardId, newCardData.attachmentToDelete.url)
     } else {
       // Các trường hợp update chung như title, description
       updateCard = await cardModel.updateCard(cardId, newCardData)

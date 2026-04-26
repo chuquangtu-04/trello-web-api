@@ -21,7 +21,7 @@ const streamUpload = (fileBuffer, folderName) => {
   return new Promise((resolve, reject) => {
     // Tạo một cái luồng stream upload lên cloudinary
     const stream = cloudinaryV2.uploader.upload_stream(
-      { folder: folderName }, // upload vào thư mục (folderName) trên Cloudinary
+      { folder: folderName, resource_type: 'auto' }, // upload vào thư mục (folderName) trên Cloudinary, tự nhận diện loại file
       (err, result) => {
         if (err) reject(err) // Nếu có lỗi thì reject Promise
         else resolve(result) // Nếu thành công thì resolve với result (chứa link, thông tin file)

@@ -14,7 +14,7 @@ const customFileFilter = (req, file, callback) => {
 
   // Đối với thằng multer kiểm tra kiểu file thì sử dụng Minetype
   if (!ALLOW_COMMON_FILE_TYPES.includes(file.mimetype)) {
-    const errMessage = 'File type is invalid. Only accept jpg, jpeg, png and webp'
+    const errMessage = 'File type is invalid. Please check allowed file types.'
     return callback(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, errMessage), null)
   }
   // Nếu như kiểu file hợp lệ
