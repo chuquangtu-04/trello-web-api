@@ -4,6 +4,7 @@ import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
+import { ObjectId } from 'mongodb'
 const createNew = async (reqBody) => {
   try {
     const newColumn = {
@@ -98,4 +99,59 @@ const hardDeleteColumn = async (columnId) => {
     return { 'message' : 'You have successfully deleted!' }
   } catch (error) {throw error}
 }
-export const columnService = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn, restoreColumns, hardDeleteColumn }
+
+// Sao chép column
+const copyColumn = async (columnId, reqBody) => {
+  try {
+    const { newTitle } = reqBody
+    const oldColumn = await columnModel.findOneById(columnId)
+    if (!oldColumn) throw new ApiError(StatusCodes.NOT_FOUND, 'Column Not Found!')
+
+    // 1. Tạo column mới bằng service hiện tại
+    const newColumnData = {
+      boardId: oldColumn.boardId.toString(),
+      title: newTitle
+    }
+    const getNewColumn = await createNew(newColumnData)
+    const newColumnId = getNewColumn._id.toString()
+    
+    // 2. Fetch cards
+    const oldCards = await cardModel.findByColumnId(columnId)
+
+    if (oldCards && oldCards.length > 0) {
+      // 3. Duplicate cards
+      const newCards = oldCards.map(card => {
+        const newCardId = new ObjectId()
+        return {
+          ...card,
+          _id: newCardId,
+          columnId: ObjectId.createFromHexString(newColumnId),
+          comments: [], // Không copy comment
+          reminder: null, // Reset reminder
+          createdAt: Date.now(),
+          updatedAt: null
+        }
+      })
+      
+      // Đảm bảo thứ tự giống column cũ
+      const orderedNewCards = oldColumn.cardOrderIds.map(oldId => {
+        const index = oldCards.findIndex(c => c._id.toString() === oldId.toString())
+        return newCards[index]
+      }).filter(c => c)
+
+      if (orderedNewCards.length > 0) {
+        await cardModel.insertMany(orderedNewCards)
+        // Cập nhật cardOrderIds cho column mới
+        const newCardOrderIds = orderedNewCards.map(c => c._id.toString())
+        await columnModel.updateColumn(newColumnId, { cardOrderIds: newCardOrderIds }, 'cardOrderIds')
+        
+        getNewColumn.cards = orderedNewCards
+        getNewColumn.cardOrderIds = newCardOrderIds
+      }
+    }
+
+    return getNewColumn
+  } catch (error) { throw error }
+}
+
+export const columnService = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn, restoreColumns, hardDeleteColumn, copyColumn }

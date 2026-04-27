@@ -46,4 +46,13 @@ const hardDeleteColumn = async (req, res, next) => {
   } catch (error) {next(error)}
 }
 
-export const columnController = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn, restoreColumns, hardDeleteColumn }
+// Copy column
+const copyColumn = async (req, res, next) => {
+  try {
+    const columnId = req.params.id
+    const result = await columnService.copyColumn(columnId, req.body)
+    res.status(StatusCodes.CREATED).json(result)
+  } catch (error) { next(error) }
+}
+
+export const columnController = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn, restoreColumns, hardDeleteColumn, copyColumn }

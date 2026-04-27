@@ -110,6 +110,23 @@ const updateCard = async (cardId, newCardData) => {
   } catch (error) { throw new Error(error) }
 }
 
+// Tìm tất cả card theo columnId
+const findByColumnId = async (columnId) => {
+  try {
+    const result = await GET_DB().collection(CARD_COLLECTION_NAME).find({
+      columnId: ObjectId.createFromHexString(columnId)
+    }).toArray()
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
+const insertMany = async (cards) => {
+  try {
+    const result = await GET_DB().collection(CARD_COLLECTION_NAME).insertMany(cards)
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
 // Xóa cards trong column
 const hardDeleteCard = async (columnId) => {
   try {
@@ -232,5 +249,7 @@ export const cardModel = {
   unshiftNewAttachment,
   pullAttachment,
   toggleLabel,
-  removeLabelFromAllCards
+  removeLabelFromAllCards,
+  findByColumnId,
+  insertMany
 }
