@@ -1,26 +1,21 @@
 import { StatusCodes } from 'http-status-codes'
 import { boardService } from '~/services/boardService'
-// Điều hướng lên service và vào model tạo mới board mới vào databasw
+
+// Điều hướng lên service và vào model tạo mới board mới vào database
 const createNew = async (req, res, next) => {
   try {
     const userId = req.jwtDecoded._id
-    // Điều hướng dữ liệu sang tầng service
     const createdBoard = await boardService.createNew(userId, req.body)
-    // Có kết quả thì trả về phía client
     res.status(StatusCodes.CREATED).json(createdBoard)
-  } catch (error) {next(error)}
+  } catch (error) { next(error) }
 }
 const getDetails = async (req, res, next) => {
   try {
     const boardId = req.params.id
-
-    // Sau này sẽ có thêm userId nữa để chỉ lấy board thuộc về user đó thôi
     const userId = req.jwtDecoded._id
-
     const board = await boardService.getDetails(userId, boardId)
-    // Có kết quả thì trả về phía client
     res.status(StatusCodes.OK).json(board)
-  } catch (error) {next(error)}
+  } catch (error) { next(error) }
 }
 
 const getBoardDetailsSoftColumn = async (req, res, next) => {
@@ -29,16 +24,15 @@ const getBoardDetailsSoftColumn = async (req, res, next) => {
     const userId = req.jwtDecoded._id
     const board = await boardService.getBoardDetailsSoftColumn(userId, boardId)
     res.status(StatusCodes.OK).json(board)
-  } catch (error) {next(error)}
+  } catch (error) { next(error) }
 }
 
 const update = async (req, res, next) => {
   try {
     const boardId = req.params.id
     const board = await boardService.update(boardId, req.body)
-    // Có kết quả thì trả về phía client
     res.status(StatusCodes.OK).json(board)
-  } catch (error) {next(error)}
+  } catch (error) { next(error) }
 }
 
 const getBoards = async (req, res, next) => {
@@ -46,14 +40,48 @@ const getBoards = async (req, res, next) => {
     const userId = req.jwtDecoded._id
     const { page, itemsPerPage, q } = req.query
     const queryFilters = q
-
-    // Page và itemsPerPage được truyền vào query url từ phía FE nên BE sẽ lấy thông tin qua req.query
     const results = await boardService.getBoards(userId, page, itemsPerPage, queryFilters)
-
     res.status(StatusCodes.OK).json(results)
   } catch (error) {
     next(error)
   }
 }
 
-export const boardController = { createNew, getDetails, update, getBoardDetailsSoftColumn, getBoards }
+// ============================================================
+// Label controllers
+// ============================================================
+
+const createLabel = async (req, res, next) => {
+  try {
+    const boardId = req.params.boardId
+    const result = await boardService.createLabel(boardId, req.body)
+    res.status(StatusCodes.CREATED).json(result)
+  } catch (error) { next(error) }
+}
+
+const updateLabel = async (req, res, next) => {
+  try {
+    const { boardId, labelId } = req.params
+    const result = await boardService.updateLabel(boardId, labelId, req.body)
+    res.status(StatusCodes.OK).json(result)
+  } catch (error) { next(error) }
+}
+
+const deleteLabel = async (req, res, next) => {
+  try {
+    const { boardId, labelId } = req.params
+    const result = await boardService.deleteLabel(boardId, labelId)
+    res.status(StatusCodes.OK).json(result)
+  } catch (error) { next(error) }
+}
+
+export const boardController = {
+  createNew,
+  getDetails,
+  update,
+  getBoardDetailsSoftColumn,
+  getBoards,
+  createLabel,
+  updateLabel,
+  deleteLabel
+}

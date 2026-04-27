@@ -17,4 +17,12 @@ Router.route('/:id')
 Router.route('/boards-soft-column/:id')
   .get(authMiddleware.isAuthorized, boardController.getBoardDetailsSoftColumn)
 
+// Label APIs
+Router.route('/:boardId/labels')
+  .post(authMiddleware.isAuthorized, boardController.createLabel)
+
+Router.route('/:boardId/labels/:labelId')
+  .put(authMiddleware.isAuthorized, boardController.updateLabel)
+  .delete(authMiddleware.isAuthorized, boardController.deleteLabel)
+
 export const boardRouter = Router
