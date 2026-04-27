@@ -27,4 +27,8 @@ Router.route('/restore-columns/:id')
 Router.route('/hard-delete/:id')
   .delete(authMiddleware.isAuthorized, columnValidation.hardDeleteColumn, columnController.hardDeleteColumn)
 
+// Copy column
+Router.route('/copy/:id')
+  .post(authMiddleware.isAuthorized, columnController.copyColumn)
+
 export const columnRouter = Router
