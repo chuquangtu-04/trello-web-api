@@ -37,6 +37,12 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
 
   labelIds: Joi.array().items(Joi.string()).default([]),
 
+  startDate: Joi.string().allow(null).default(null), // ISO string
+  dueDate: Joi.string().allow(null).default(null), // ISO string
+  dueTime: Joi.string().allow(null).default(null), // "HH:mm"
+  reminder: Joi.string().allow(null).default(null), // "5m", "10m", "1h", "1d"
+  repeat: Joi.string().allow(null).default(null), // "none", "daily", "weekly", "monthly"
+
   completed: Joi.boolean().default(false),
 
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
