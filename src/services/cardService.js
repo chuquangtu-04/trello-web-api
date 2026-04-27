@@ -61,4 +61,13 @@ const updateCard = async (cardId, reqBody, cardCoverFile, userInfo) => {
     return updateCard
   } catch (error) { throw error }
 }
-export const cardService = { createNew, updateCard }
+const deleteCard = async (cardId) => {
+  try {
+    await cardModel.hardDeleteById(cardId)
+    // Cũng nên xóa cardId ra khỏi column.cardOrderIds, nhưng boardModel / columnModel sẽ cần xử lý
+    // Ở đây ta cứ trả về success, Frontend sẽ xóa thẻ trong Redux
+    return { message: 'Card deleted successfully' }
+  } catch (error) { throw error }
+}
+
+export const cardService = { createNew, updateCard, deleteCard }

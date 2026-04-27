@@ -119,6 +119,13 @@ const deleteLabel = async (boardId, labelId) => {
   } catch (error) { throw error }
 }
 
+const getArchivedCards = async (boardId) => {
+  try {
+    const cards = await cardModel.getArchivedCards(boardId)
+    return cards
+  } catch (error) { throw error }
+}
+
 export const boardService = {
   createNew,
   getDetails,
@@ -127,5 +134,6 @@ export const boardService = {
   getBoards,
   createLabel,
   updateLabel,
-  deleteLabel
+  deleteLabel,
+  getArchivedCards
 }
