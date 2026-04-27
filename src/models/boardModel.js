@@ -1,4 +1,5 @@
 import Joi, { object } from 'joi'
+import { v4 as uuidv4 } from 'uuid'
 import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
 import { BOARD_TYPE } from '~/utils/constants'
@@ -16,17 +17,23 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   description: Joi.string().required().min(3).max(256).trim().strict(),
   background: Joi.string().uri().trim().strict().default(''),
   type: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE).required(),
-  columnOrderIds:Joi.array().items(
+  columnOrderIds: Joi.array().items(
     Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   ).default([]),
   // Những admin của board
-  ownerIds:Joi.array().items(
+  ownerIds: Joi.array().items(
     Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   ).default([]),
   // Thành viên của board
-  memberIds:Joi.array().items(
+  memberIds: Joi.array().items(
     Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   ).default([]),
+  // Labels của board (dùng chung cho nhiều card)
+  labels: Joi.array().items(Joi.object({
+    id: Joi.string().required(),
+    name: Joi.string().allow('').default(''),
+    color: Joi.string().required()
+  })).default([]),
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
   _destroy: Joi.boolean().default(false)
@@ -48,7 +55,7 @@ const createNew = async (userId, data) => {
     }
     const createBoard = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(updateAddNewColumn)
     return createBoard
-  } catch (error) {throw new Error(error)}
+  } catch (error) { throw new Error(error) }
 }
 // Tìm trả về board
 const findOneById = async (id) => {
@@ -57,7 +64,7 @@ const findOneById = async (id) => {
       _id: ObjectId.createFromHexString(id)
     })
     return result
-  } catch (error) {throw new Error(error)}
+  } catch (error) { throw new Error(error) }
 }
 // Query tổng hợp (aggregate) để lấy toàn bộ column và Cards thuộc về board
 const getDetails = async (userId, boardId) => {
@@ -65,10 +72,12 @@ const getDetails = async (userId, boardId) => {
     const queryConditions = [
       { _id: ObjectId.createFromHexString(boardId) },
       { _destroy: false },
-      { $or: [
-        { ownerIds: { $all: [new ObjectId(userId)] } },
-        { memberIds: { $all: [new ObjectId(userId)] } }
-      ] }
+      {
+        $or: [
+          { ownerIds: { $all: [new ObjectId(userId)] } },
+          { memberIds: { $all: [new ObjectId(userId)] } }
+        ]
+      }
     ]
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate(
       [
@@ -112,7 +121,7 @@ const getDetails = async (userId, boardId) => {
       ]
     ).toArray()
     return result[0] || null
-  } catch (error) {throw new Error(error)}
+  } catch (error) { throw new Error(error) }
 }
 
 // Nhiệm vụ của fn này là push 1 cái giá trị columnId vào cuối mảng columnOrdersIds
@@ -130,7 +139,7 @@ const pushColumnOrderIds = async (column) => {
       }
     )
     return result || null
-  } catch (error) {throw new Error(error)}
+  } catch (error) { throw new Error(error) }
 }
 
 const update = async (boardId, newColumnData) => {
@@ -152,7 +161,7 @@ const update = async (boardId, newColumnData) => {
       }
     )
     return result
-  } catch (error) {throw new Error(error)}
+  } catch (error) { throw new Error(error) }
 }
 
 const pullColumnOrderIds = async (column) => {
@@ -167,7 +176,7 @@ const pullColumnOrderIds = async (column) => {
       }
     )
     return result
-  } catch (error) {throw new Error(error)}
+  } catch (error) { throw new Error(error) }
 }
 
 const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
@@ -177,14 +186,16 @@ const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
       { _destroy: false },
       // Điều kiện 02: cái thằng userId đang thực hiện request này nó phải thuộc vào một trong 2 cái mảng
       // ownerIds hoặc memberIds, sử dụng toán tử $all của mongodb
-      { $or: [
-        { ownerIds: { $all: [new ObjectId(userId)] } },
-        { memberIds: { $all: [new ObjectId(userId)] } }
-      ] }
+      {
+        $or: [
+          { ownerIds: { $all: [new ObjectId(userId)] } },
+          { memberIds: { $all: [new ObjectId(userId)] } }
+        ]
+      }
     ]
     // Xử lý query filter cho từng trường hợp search board, ví dụ theo title
     if (queryFilters) {
-      Object.keys(queryFilters).forEach( key => {
+      Object.keys(queryFilters).forEach(key => {
         // queryFilters[key] ví dụ queryFilters[title] nếu phía FE đẩy lên q[title]
         // Có phân biệt chữ hoa và chữ thường
         // queryConditions.push({
@@ -203,15 +214,17 @@ const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
         // sort title của board theo A-Z (mặc định sẽ bị: chữ B hoa đứng trước chữ a thường (theo chuẩn bảng mã ASCII))
         { $sort: { title: 1 } },
         // $facet để xử lý nhiều luồng trong một query
-        { $facet: {
-        // Luồng 01: query boards
-          'queryBoards': [
-            { $skip: pagingSkipValue(page, itemsPerPage) }, // bỏ qua số lượng bản ghi của những page trước đó
-            { $limit: itemsPerPage } // giới hạn tối đa số lượng bản ghi trả về trên 1 page
-          ],
-          // Luồng 02: query đến tổng tất cả số lượng bản ghi boards trong DB và trả về vào biến countedAllBoards
-          'queryTotalBoards': [{ $count: 'countedAllBoards' }]
-        } }
+        {
+          $facet: {
+            // Luồng 01: query boards
+            'queryBoards': [
+              { $skip: pagingSkipValue(page, itemsPerPage) }, // bỏ qua số lượng bản ghi của những page trước đó
+              { $limit: itemsPerPage } // giới hạn tối đa số lượng bản ghi trả về trên 1 page
+            ],
+            // Luồng 02: query đến tổng tất cả số lượng bản ghi boards trong DB và trả về vào biến countedAllBoards
+            'queryTotalBoards': [{ $count: 'countedAllBoards' }]
+          }
+        }
       ],
       // Khai báo thêm thuộc tính collation locale 'en' để fix vụ chữ B hoa và a thường ở trên
       // https://www.mongodb.com/docs/v6.0/reference/collation/#std-label-collation-document-fields
@@ -223,7 +236,7 @@ const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
       boards: res.queryBoards || [],
       totalBoards: res.queryTotalBoards[0]?.countedAllBoards || 0
     }
-  } catch (error) {throw new Error(error)}
+  } catch (error) { throw new Error(error) }
 }
 
 const pushMembersIds = async (boardId, data) => {
@@ -259,7 +272,47 @@ const pushMembersIds = async (boardId, data) => {
       }
     )
     return result
-  } catch (error) {throw new Error(error)}
+  } catch (error) { throw new Error(error) }
+}
+
+// Tạo label mới cho board
+const createLabel = async (boardId, labelData) => {
+  try {
+    const newLabel = { id: uuidv4(), ...labelData }
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: ObjectId.createFromHexString(boardId) },
+      { $push: { labels: newLabel } },
+      { returnDocument: 'after' }
+    )
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
+// Cập nhật label trong board
+const updateLabel = async (boardId, labelId, updateData) => {
+  try {
+    const setFields = {}
+    if (updateData.name !== undefined) setFields['labels.$.name'] = updateData.name
+    if (updateData.color !== undefined) setFields['labels.$.color'] = updateData.color
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: ObjectId.createFromHexString(boardId), 'labels.id': labelId },
+      { $set: setFields },
+      { returnDocument: 'after' }
+    )
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
+// Xóa label khỏi board
+const deleteLabel = async (boardId, labelId) => {
+  try {
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: ObjectId.createFromHexString(boardId) },
+      { $pull: { labels: { id: labelId } } },
+      { returnDocument: 'after' }
+    )
+    return result
+  } catch (error) { throw new Error(error) }
 }
 
 export const boardModel = {
@@ -273,5 +326,8 @@ export const boardModel = {
   update,
   pullColumnOrderIds,
   getBoards,
-  pushMembersIds
+  pushMembersIds,
+  createLabel,
+  updateLabel,
+  deleteLabel
 }

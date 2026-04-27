@@ -35,6 +35,7 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
     addedAt: Joi.date().timestamp()
   }).default([]),
 
+  labelIds: Joi.array().items(Joi.string()).default([]),
 
   completed: Joi.boolean().default(false),
 
@@ -57,7 +58,7 @@ const createNew = async (data) => {
     }
     const createCard = await GET_DB().collection(CARD_COLLECTION_NAME).insertOne(newCardToAdd)
     return createCard
-  } catch (error) {throw new Error(error)}
+  } catch (error) { throw new Error(error) }
 }
 const findOneById = async (id) => {
   try {
@@ -65,7 +66,7 @@ const findOneById = async (id) => {
       _id: ObjectId.createFromHexString(id)
     })
     return result
-  } catch (error) {throw new Error(error)}
+  } catch (error) { throw new Error(error) }
 }
 
 const updateCardOutColumn = async (overColumnId, activeCardId) => {
@@ -83,7 +84,7 @@ const updateCardOutColumn = async (overColumnId, activeCardId) => {
       }
     )
     return result
-  } catch (error) {throw new Error(error)}
+  } catch (error) { throw new Error(error) }
 }
 const updateCard = async (cardId, newCardData) => {
   try {
@@ -100,7 +101,7 @@ const updateCard = async (cardId, newCardData) => {
       }
     )
     return result
-  } catch (error) {throw new Error(error)}
+  } catch (error) { throw new Error(error) }
 }
 
 // Xóa cards trong column
@@ -112,7 +113,7 @@ const hardDeleteCard = async (columnId) => {
       }
     )
     return result
-  } catch (error) {throw new Error(error)}
+  } catch (error) { throw new Error(error) }
 }
 
 /*
@@ -157,8 +158,8 @@ const updateMembers = async (cardId, incomingMemberInfo) => {
     )
 
     return result
-  } catch (error) { 
-    throw new Error(error) 
+  } catch (error) {
+    throw new Error(error)
   }
 }
 
@@ -184,6 +185,34 @@ const pullAttachment = async (cardId, attachmentUrl) => {
   } catch (error) { throw new Error(error) }
 }
 
+// Toggle label: nếu card đã có labelId thì remove, nếu chưa có thì add
+const toggleLabel = async (cardId, labelId) => {
+  try {
+    const card = await GET_DB().collection(CARD_COLLECTION_NAME).findOne({ _id: new ObjectId(cardId) })
+    const hasLabel = card?.labelIds?.includes(labelId)
+    const updateCondition = hasLabel
+      ? { $pull: { labelIds: labelId } }
+      : { $push: { labelIds: labelId } }
+    const result = await GET_DB().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(cardId) },
+      updateCondition,
+      { returnDocument: 'after' }
+    )
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
+// Xóa labelId khỏi tất cả card trong board khi label bị xóa
+const removeLabelFromAllCards = async (boardId, labelId) => {
+  try {
+    const result = await GET_DB().collection(CARD_COLLECTION_NAME).updateMany(
+      { boardId: new ObjectId(boardId) },
+      { $pull: { labelIds: labelId } }
+    )
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
@@ -195,5 +224,7 @@ export const cardModel = {
   unShiftNewComment,
   updateMembers,
   unshiftNewAttachment,
-  pullAttachment
+  pullAttachment,
+  toggleLabel,
+  removeLabelFromAllCards
 }

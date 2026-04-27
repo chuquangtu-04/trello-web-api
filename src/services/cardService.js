@@ -14,7 +14,7 @@ const createNew = async (reqBody) => {
       await columnModel.pushCardOrderIds(getNewCard)
     }
     return getNewCard
-  } catch (error) {throw error}
+  } catch (error) { throw error }
 }
 
 const updateCard = async (cardId, reqBody, cardCoverFile, userInfo) => {
@@ -51,11 +51,14 @@ const updateCard = async (cardId, reqBody, cardCoverFile, userInfo) => {
       updateCard = await cardModel.unshiftNewAttachment(cardId, attachmentData)
     } else if (newCardData.attachmentToDelete) {
       updateCard = await cardModel.pullAttachment(cardId, newCardData.attachmentToDelete.url)
+    } else if (newCardData.toggleLabelId) {
+      // Toggle label: add nếu chưa có, remove nếu đã có
+      updateCard = await cardModel.toggleLabel(cardId, newCardData.toggleLabelId)
     } else {
       // Các trường hợp update chung như title, description
       updateCard = await cardModel.updateCard(cardId, newCardData)
     }
     return updateCard
-  } catch (error) {throw error}
+  } catch (error) { throw error }
 }
-export const cardService = { createNew, updateCard }
+export const cardService = { createNew, updateCard }
