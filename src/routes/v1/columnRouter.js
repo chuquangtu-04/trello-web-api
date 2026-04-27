@@ -31,4 +31,8 @@ Router.route('/hard-delete/:id')
 Router.route('/copy/:id')
   .post(authMiddleware.isAuthorized, columnController.copyColumn)
 
+// Archive all cards in column
+Router.route('/:id/archive-cards')
+  .patch(authMiddleware.isAuthorized, columnController.archiveCards)
+
 export const columnRouter = Router

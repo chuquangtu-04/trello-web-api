@@ -25,4 +25,8 @@ Router.route('/:boardId/labels/:labelId')
   .put(authMiddleware.isAuthorized, boardController.updateLabel)
   .delete(authMiddleware.isAuthorized, boardController.deleteLabel)
 
+// Lấy danh sách archived cards
+Router.route('/:id/archived-cards')
+  .get(authMiddleware.isAuthorized, boardController.getArchivedCards)
+
 export const boardRouter = Router

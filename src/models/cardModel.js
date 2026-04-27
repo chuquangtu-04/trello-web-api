@@ -44,6 +44,8 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
   repeat: Joi.string().allow(null).default(null), // "none", "daily", "weekly", "monthly"
 
   completed: Joi.boolean().default(false),
+  isArchived: Joi.boolean().default(false),
+  archivedAt: Joi.date().timestamp('javascript').allow(null).default(null),
 
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
@@ -114,7 +116,8 @@ const updateCard = async (cardId, newCardData) => {
 const findByColumnId = async (columnId) => {
   try {
     const result = await GET_DB().collection(CARD_COLLECTION_NAME).find({
-      columnId: ObjectId.createFromHexString(columnId)
+      columnId: ObjectId.createFromHexString(columnId),
+      isArchived: { $ne: true } // Chỉ lấy card chưa archived
     }).toArray()
     return result
   } catch (error) { throw new Error(error) }
@@ -127,6 +130,17 @@ const insertMany = async (cards) => {
   } catch (error) { throw new Error(error) }
 }
 
+// Lấy danh sách các card đã archive theo boardId
+const getArchivedCards = async (boardId) => {
+  try {
+    const result = await GET_DB().collection(CARD_COLLECTION_NAME).find({
+      boardId: ObjectId.createFromHexString(boardId),
+      isArchived: true
+    }).toArray()
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
 // Xóa cards trong column
 const hardDeleteCard = async (columnId) => {
   try {
@@ -135,6 +149,27 @@ const hardDeleteCard = async (columnId) => {
         columnId: ObjectId.createFromHexString(columnId)
       }
     )
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
+// Lưu trữ (Archive) toàn bộ card trong column
+const archiveAllCardsInColumn = async (columnId) => {
+  try {
+    const result = await GET_DB().collection(CARD_COLLECTION_NAME).updateMany(
+      { columnId: ObjectId.createFromHexString(columnId) },
+      { $set: { isArchived: true, archivedAt: Date.now() } }
+    )
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
+// Xóa vĩnh viễn 1 card theo id
+const hardDeleteById = async (cardId) => {
+  try {
+    const result = await GET_DB().collection(CARD_COLLECTION_NAME).deleteOne({
+      _id: ObjectId.createFromHexString(cardId)
+    })
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -251,5 +286,8 @@ export const cardModel = {
   toggleLabel,
   removeLabelFromAllCards,
   findByColumnId,
-  insertMany
+  insertMany,
+  getArchivedCards,
+  hardDeleteById,
+  archiveAllCardsInColumn
 }

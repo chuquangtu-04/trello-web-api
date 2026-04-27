@@ -154,4 +154,16 @@ const copyColumn = async (columnId, reqBody) => {
   } catch (error) { throw error }
 }
 
-export const columnService = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn, restoreColumns, hardDeleteColumn, copyColumn }
+// Archive toàn bộ cards trong column
+const archiveCards = async (columnId) => {
+  try {
+    const targetColumn = await columnModel.findOneById(columnId)
+    if (!targetColumn) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Column Not Found!')
+    }
+    await cardModel.archiveAllCardsInColumn(columnId)
+    return { message: 'All cards have been archived successfully.' }
+  } catch (error) { throw error }
+}
+
+export const columnService = { createNew, updateColumn, updateCardOutColumn, softDeleteColumn, restoreColumns, hardDeleteColumn, copyColumn, archiveCards }

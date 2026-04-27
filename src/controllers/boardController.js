@@ -69,8 +69,17 @@ const updateLabel = async (req, res, next) => {
 
 const deleteLabel = async (req, res, next) => {
   try {
-    const { boardId, labelId } = req.params
+    const boardId = req.params.boardId
+    const labelId = req.params.labelId
     const result = await boardService.deleteLabel(boardId, labelId)
+    res.status(StatusCodes.OK).json(result)
+  } catch (error) { next(error) }
+}
+
+const getArchivedCards = async (req, res, next) => {
+  try {
+    const boardId = req.params.id
+    const result = await boardService.getArchivedCards(boardId)
     res.status(StatusCodes.OK).json(result)
   } catch (error) { next(error) }
 }
@@ -83,5 +92,6 @@ export const boardController = {
   getBoards,
   createLabel,
   updateLabel,
-  deleteLabel
+  deleteLabel,
+  getArchivedCards
 }

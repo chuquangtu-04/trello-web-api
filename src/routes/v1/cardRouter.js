@@ -13,5 +13,6 @@ Router.route('/:id')
     multerUploadMiddleware.upload.single('cardCover'),
     cardValidation.updateCard,
     cardController.updateCard)
+  .delete(authMiddleware.isAuthorized, cardController.deleteCard)
 
 export const cardRouter = Router
