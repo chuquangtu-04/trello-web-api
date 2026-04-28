@@ -24,4 +24,12 @@ const deleteCard = async (req, res, next) => {
   } catch (error) { next(error) }
 }
 
-export const cardController = { createNew, updateCard, deleteCard }
+const archiveCard = async (req, res, next) => {
+  try {
+    const cardId = req.params.id
+    const result = await cardService.archiveCard(cardId)
+    res.status(StatusCodes.OK).json(result)
+  } catch (error) { next(error) }
+}
+
+export const cardController = { createNew, updateCard, deleteCard, archiveCard }

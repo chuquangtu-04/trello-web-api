@@ -70,4 +70,16 @@ const deleteCard = async (cardId) => {
   } catch (error) { throw error }
 }
 
-export const cardService = { createNew, updateCard, deleteCard }
+const archiveCard = async (cardId) => {
+  try {
+    const updateData = {
+      isArchived: true,
+      archivedAt: Date.now(),
+      updatedAt: Date.now()
+    }
+    const updatedCard = await cardModel.updateCard(cardId, updateData)
+    return updatedCard
+  } catch (error) { throw error }
+}
+
+export const cardService = { createNew, updateCard, deleteCard, archiveCard }
