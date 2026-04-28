@@ -2,6 +2,8 @@
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
 import { CloudinaryProvider } from '~/providers/CloudinaryProvider'
+import { ObjectId } from 'mongodb'
+
 const createNew = async (reqBody) => {
   try {
     const newCard = {
@@ -61,6 +63,7 @@ const updateCard = async (cardId, reqBody, cardCoverFile, userInfo) => {
     return updateCard
   } catch (error) { throw error }
 }
+
 const deleteCard = async (cardId) => {
   try {
     await cardModel.hardDeleteById(cardId)
@@ -82,4 +85,55 @@ const archiveCard = async (cardId) => {
   } catch (error) { throw error }
 }
 
-export const cardService = { createNew, updateCard, deleteCard, archiveCard }
+const moveCard = async (cardId, reqBody) => {
+  try {
+    const { boardId, columnId, targetBoardId, targetColumnId, position } = reqBody
+
+    const card = await cardModel.findOneById(cardId)
+    if (!card) throw new Error('Card not found')
+
+    const isDifferentBoard = targetBoardId && targetBoardId !== boardId
+
+    if (columnId === targetColumnId && !isDifferentBoard) {
+      // Di chuyển trong cùng một column
+      const column = await columnModel.findOneById(columnId)
+      if (!column) throw new Error('Column not found')
+
+      const newCardOrderIds = Array.from(column.cardOrderIds.map(id => id.toString()))
+      const oldIndex = newCardOrderIds.indexOf(cardId)
+      if (oldIndex !== -1) {
+        newCardOrderIds.splice(oldIndex, 1)
+        newCardOrderIds.splice(position, 0, cardId)
+        await columnModel.updateColumn(columnId, { cardOrderIds: newCardOrderIds })
+      }
+    } else {
+      // Di chuyển sang column khác (có thể khác board)
+      const oldColumn = await columnModel.findOneById(columnId)
+      const newColumn = await columnModel.findOneById(targetColumnId)
+      if (!oldColumn || !newColumn) throw new Error('Column(s) not found')
+
+      // 1. Update card data
+      const updateData = {
+        columnId: ObjectId.createFromHexString(targetColumnId),
+        updatedAt: Date.now()
+      }
+      if (isDifferentBoard) {
+        updateData.boardId = ObjectId.createFromHexString(targetBoardId)
+      }
+      await cardModel.updateCard(cardId, updateData)
+
+      // 2. Cập nhật cardOrderIds của column cũ
+      const oldCardOrderIds = oldColumn.cardOrderIds.map(id => id.toString()).filter(id => id !== cardId)
+      await columnModel.updateColumn(columnId, { cardOrderIds: oldCardOrderIds })
+
+      // 3. Cập nhật cardOrderIds của column mới
+      const newCardOrderIds = newColumn.cardOrderIds.map(id => id.toString())
+      newCardOrderIds.splice(position, 0, cardId)
+      await columnModel.updateColumn(targetColumnId, { cardOrderIds: newCardOrderIds })
+    }
+
+    return { message: 'Card moved successfully' }
+  } catch (error) { throw error }
+}
+
+export const cardService = { createNew, updateCard, deleteCard, archiveCard, moveCard }

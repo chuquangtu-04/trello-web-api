@@ -36,4 +36,19 @@ const updateCard = async (req, res, next) => {
   }
 }
 
-export const cardValidation = { createNew, updateCard }
+const moveCard = async (req, res, next) => {
+  const correctCondition = Joi.object({
+    columnId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+    targetBoardId: Joi.string().optional().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+    targetColumnId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+    position: Joi.number().required().min(0)
+  })
+  try {
+    await correctCondition.validateAsync(req.body, { abortEarly: false, allowUnknown: true })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
+export const cardValidation = { createNew, updateCard, moveCard }

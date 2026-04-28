@@ -32,4 +32,12 @@ const archiveCard = async (req, res, next) => {
   } catch (error) { next(error) }
 }
 
-export const cardController = { createNew, updateCard, deleteCard, archiveCard }
+const moveCard = async (req, res, next) => {
+  try {
+    const cardId = req.params.id
+    const result = await cardService.moveCard(cardId, req.body)
+    res.status(StatusCodes.OK).json(result)
+  } catch (error) { next(error) }
+}
+
+export const cardController = { createNew, updateCard, deleteCard, archiveCard, moveCard }

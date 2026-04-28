@@ -17,4 +17,7 @@ Router.route('/:id')
 Router.route('/:id/archive')
   .patch(authMiddleware.isAuthorized, cardController.archiveCard)
 
+Router.route('/:id/move')
+  .patch(authMiddleware.isAuthorized, cardValidation.moveCard, cardController.moveCard)
+
 export const cardRouter = Router
