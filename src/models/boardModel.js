@@ -147,18 +147,23 @@ const pushColumnOrderIds = async (column) => {
   } catch (error) { throw new Error(error) }
 }
 
-const update = async (boardId, newColumnData) => {
+const update = async (boardId, updateData) => {
   try {
-    Object.keys(newColumnData).forEach(fieldName => {
+    Object.keys(updateData).forEach(fieldName => {
       if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
-        delete newColumnData[fieldName]
+        delete updateData[fieldName]
       }
     })
-    const newColumn = newColumnData.columnOrderIds.map(c => ObjectId.createFromHexString(c))
+
+    // Nếu dữ liệu update có columnOrderIds thì xử lý chuyển đổi ObjectId
+    if (updateData.columnOrderIds) {
+      updateData.columnOrderIds = updateData.columnOrderIds.map(c => ObjectId.createFromHexString(c))
+    }
+
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: ObjectId.createFromHexString(boardId) },
       {
-        $set: { columnOrderIds: newColumn }
+        $set: updateData
       },
       {
         upsert: false,
