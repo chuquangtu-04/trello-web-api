@@ -136,4 +136,56 @@ const moveCard = async (cardId, reqBody) => {
   } catch (error) { throw error }
 }
 
-export const cardService = { createNew, updateCard, deleteCard, archiveCard, moveCard }
+const copyCard = async (cardId, reqBody) => {
+  try {
+    const { title, columnId, position, options } = reqBody
+    const originalCard = await cardModel.findOneById(cardId)
+    if (!originalCard) throw new Error('Original card not found')
+
+    // 1. Chuẩn bị dữ liệu cho card mới (Chuyển tất cả ObjectId về String để Joi validation không bị lỗi)
+    const newCardData = {
+      boardId: originalCard.boardId.toString(),
+      columnId: columnId.toString(),
+      title: title || `${originalCard.title} (copy)`,
+      description: originalCard.description,
+      cover: originalCard.cover,
+      isArchived: false,
+      archivedAt: null,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      _destroy: false
+    }
+
+    // 2. Copy các phần tùy chọn
+    if (options.copyLabels) newCardData.labelIds = originalCard.labelIds || []
+    if (options.copyMembers) {
+      newCardData.memberIds = (originalCard.memberIds || []).map(id => id.toString())
+    }
+    if (options.copyDates) {
+      newCardData.startDate = originalCard.startDate
+      newCardData.dueDate = originalCard.dueDate
+      newCardData.dueTime = originalCard.dueTime
+      newCardData.reminder = originalCard.reminder
+      newCardData.completed = originalCard.completed
+    }
+    if (options.copyAttachments) {
+      newCardData.attachments = originalCard.attachments || []
+    }
+
+    // 3. Lưu card mới vào database
+    const createdCardResult = await cardModel.createNew(newCardData)
+    const newCard = await cardModel.findOneById(createdCardResult.insertedId.toString())
+
+    // 4. Cập nhật cardOrderIds của column đích
+    const targetColumn = await columnModel.findOneById(columnId)
+    if (targetColumn) {
+      const newCardOrderIds = targetColumn.cardOrderIds.map(id => id.toString())
+      newCardOrderIds.splice(position, 0, newCard._id.toString())
+      await columnModel.updateColumn(columnId, { cardOrderIds: newCardOrderIds })
+    }
+
+    return newCard
+  } catch (error) { throw error }
+}
+
+export const cardService = { createNew, updateCard, deleteCard, archiveCard, moveCard, copyCard }
