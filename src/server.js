@@ -31,21 +31,30 @@ const START_SERVER = () => {
   // Enable req.body json data
   app.use(express.json())
   app.use(cors(corsOptions))
+
+  // Tạo một cái server mới bọc thằng app của express đề làm real-time với socket.io
+  const server = http.createServer(app)
+  // Khởi tạo biến io với server và cors
+  const io = socketIo(server, { cors: corsOptions })
+
+  // Middleware để truyền io vào req (Phải đặt trước khi sử dụng các routes APIs_v1)
+  app.use((req, res, next) => {
+    req.io = io
+    next()
+  })
+
   // Use Api v1
   app.use('/v1', APIs_v1)
 
   // Middleware xử lý lỗi tập trung
   app.use(errorHandlingMiddleware)
 
-  // Tạo một cái server mới bọc thằng app của express đề làm real-time với socket.io
-  const server = http.createServer(app)
-  // Khởi tạo biến io với server và cors
-  const io = socketIo(server, { cors: corsOptions })
   io.on('connection', (socket) => {
     // Gọi các socket theo tính năng ở đây
     inviteUserToBoardSocket(socket)
     updateCardSocket(socket)
   })
+
   // Môi trường Production (cụ thể hiện tại là đang support Render.com)
   if (env.BUILD_MODE === 'production') {
     // Dùng server.listen thay vì app.listen vì lúc này server đã bao gồm express app và đã config socket.io

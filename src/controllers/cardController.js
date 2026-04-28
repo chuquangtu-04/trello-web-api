@@ -13,6 +13,13 @@ const updateCard = async (req, res, next) => {
     const userInfo = req.jwtDecoded
     const cardCoverFile = req.file
     const updateCard = await cardService.updateCard(cardId, req.body, cardCoverFile, userInfo)
+
+    // Real-time xử lý comment mới
+    if (req.body.newCommentToAdd && updateCard.comments) {
+      const newComment = updateCard.comments[0] // Vì dùng unShift nên comment mới nằm ở đầu mảng
+      req.io.to(`card_${cardId}`).emit('BE_USER_ADDED_COMMENT', { cardId, comment: newComment })
+    }
+
     res.status(StatusCodes.CREATED).json(updateCard)
   } catch (error) {next(error)}
 }
