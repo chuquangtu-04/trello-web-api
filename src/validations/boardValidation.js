@@ -23,7 +23,8 @@ const createNew = async (req, res, next) => {
     }),
     description: Joi.string().required().min(3).max(256).trim().strict(),
     background: Joi.string().trim().strict().allow(''),
-    type: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE).required()
+    type: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE).required(),
+    visibility: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE).optional()
   })
   try {
     // Chỉ định abortEarly: false để trường hợp có nhiều lỗi validation thì trả về tất cả
@@ -41,7 +42,8 @@ const update = async (req, res, next) => {
     title: Joi.string().min(3).max(50).trim().strict(),
     description: Joi.string().min(3).max(256).trim().strict(),
     background: Joi.string().trim().strict().allow(''),
-    type: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE)
+    type: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE),
+    visibility: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE)
   })
   try {
     // Chỉ định abortEarly: false để trường hợp có nhiều lỗi validation thì trả về tất cả

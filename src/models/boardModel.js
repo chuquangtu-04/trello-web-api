@@ -16,7 +16,8 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   slug: Joi.string().required().min(3).trim().strict(),
   description: Joi.string().required().min(3).max(256).trim().strict(),
   background: Joi.string().trim().strict().default(''),
-  type: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE).required(),
+  type: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE).optional(),
+  visibility: Joi.string().valid(BOARD_TYPE.PUBLIC, BOARD_TYPE.PRIVATE).optional(),
   columnOrderIds: Joi.array().items(
     Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   ).default([]),
@@ -49,11 +50,19 @@ const validateBeforeCreate = async (data) => {
 const createNew = async (userId, data) => {
   try {
     const validateData = await validateBeforeCreate(data)
-    const updateAddNewColumn = {
+    
+    // Đảm bảo đồng bộ visibility và type khi tạo mới. 
+    // Ưu tiên visibility, nếu không có lấy type, cuối cùng là PUBLIC.
+    const visibility = data.visibility || data.type || BOARD_TYPE.PUBLIC
+    
+    const finalData = {
       ...validateData,
+      visibility: visibility,
+      type: visibility,
       ownerIds: [ObjectId.createFromHexString(userId)]
     }
-    const createBoard = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(updateAddNewColumn)
+
+    const createBoard = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(finalData)
     return createBoard
   } catch (error) { throw new Error(error) }
 }
@@ -74,6 +83,8 @@ const getDetails = async (userId, boardId) => {
       { _destroy: false },
       {
         $or: [
+          { visibility: BOARD_TYPE.PUBLIC },
+          { visibility: { $exists: false }, type: BOARD_TYPE.PUBLIC }, // Trường hợp board cũ chưa có field visibility
           { ownerIds: { $all: [new ObjectId(userId)] } },
           { memberIds: { $all: [new ObjectId(userId)] } }
         ]

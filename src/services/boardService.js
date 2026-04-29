@@ -173,6 +173,24 @@ const toggleStar = async (userId, boardId) => {
   } catch (error) { throw error }
 }
 
+const updateVisibility = async (userId, boardId, visibility) => {
+  try {
+    const board = await boardModel.findOneById(boardId)
+    if (!board) throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found!')
+
+    // Chỉ admin/owner được đổi visibility
+    if (!board.ownerIds.some(id => id.toString() === userId)) {
+      throw new ApiError(StatusCodes.FORBIDDEN, 'Only board owners can change visibility!')
+    }
+
+    const updatedBoard = await boardModel.update(boardId, { 
+      visibility,
+      type: visibility // Đồng bộ với trường type cũ
+    })
+    return updatedBoard
+  } catch (error) { throw error }
+}
+
 export const boardService = {
   createNew,
   getDetails,
@@ -183,5 +201,6 @@ export const boardService = {
   updateLabel,
   deleteLabel,
   getArchivedCards,
-  toggleStar
+  toggleStar,
+  updateVisibility
 }
