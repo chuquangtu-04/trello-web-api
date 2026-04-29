@@ -18,6 +18,8 @@
   "dependencies": {
     "@babel/runtime": "^7.22.10",
     "@getbrevo/brevo": "^2.5.0",
+    "@google/generative-ai": "^0.24.1",
+    "@openrouter/sdk": "^0.12.22",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.7",
