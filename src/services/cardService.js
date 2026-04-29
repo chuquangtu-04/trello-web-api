@@ -58,6 +58,10 @@ const updateCard = async (cardId, reqBody, cardCoverFile, userInfo) => {
       updateCard = await cardModel.toggleLabel(cardId, newCardData.toggleLabelId)
     } else {
       // Các trường hợp update chung như title, description
+      // Nếu có update dueDate, dueTime hoặc reminder thì reset reminderSent về false
+      if (newCardData.dueDate || newCardData.dueTime || newCardData.reminder) {
+        newCardData.reminderSent = false
+      }
       updateCard = await cardModel.updateCard(cardId, newCardData)
     }
     return updateCard

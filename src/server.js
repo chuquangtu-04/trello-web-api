@@ -14,6 +14,7 @@ import socketIo from 'socket.io'
 import http from 'http'
 import { inviteUserToBoardSocket } from './sockets/inviteUserToBoardSocket'
 import { updateCardSocket } from './sockets/updateCardSocket'
+import { startCardReminderCron } from './cronJobs/cardReminderCron'
 
 const START_SERVER = () => {
   const app = express()
@@ -54,6 +55,9 @@ const START_SERVER = () => {
     inviteUserToBoardSocket(socket)
     updateCardSocket(socket)
   })
+
+  // Khởi động Cron Job nhắc nhở
+  startCardReminderCron()
 
   // Môi trường Production (cụ thể hiện tại là đang support Render.com)
   if (env.BUILD_MODE === 'production') {
