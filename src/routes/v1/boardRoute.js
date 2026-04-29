@@ -13,6 +13,9 @@ Router.route('/:id')
   .get(authMiddleware.isAuthorized, boardController.getDetails)
   .put(authMiddleware.isAuthorized, boardValidation.update, boardController.update)
 
+Router.route('/:id/star')
+  .patch(authMiddleware.isAuthorized, boardController.toggleStar)
+
 // Gọi APi trả về nhưng column xóa mềm
 Router.route('/boards-soft-column/:id')
   .get(authMiddleware.isAuthorized, boardController.getBoardDetailsSoftColumn)

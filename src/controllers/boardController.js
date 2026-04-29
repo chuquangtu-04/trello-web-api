@@ -84,6 +84,15 @@ const getArchivedCards = async (req, res, next) => {
   } catch (error) { next(error) }
 }
 
+const toggleStar = async (req, res, next) => {
+  try {
+    const userId = req.jwtDecoded._id
+    const boardId = req.params.id
+    const result = await boardService.toggleStar(userId, boardId)
+    res.status(StatusCodes.OK).json(result)
+  } catch (error) { next(error) }
+}
+
 export const boardController = {
   createNew,
   getDetails,
@@ -93,5 +102,6 @@ export const boardController = {
   createLabel,
   updateLabel,
   deleteLabel,
-  getArchivedCards
+  getArchivedCards,
+  toggleStar
 }

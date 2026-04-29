@@ -206,15 +206,18 @@ const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
     // Xử lý query filter cho từng trường hợp search board, ví dụ theo title
     if (queryFilters) {
       Object.keys(queryFilters).forEach(key => {
-        // queryFilters[key] ví dụ queryFilters[title] nếu phía FE đẩy lên q[title]
-        // Có phân biệt chữ hoa và chữ thường
-        // queryConditions.push({
-        //   [key]: { $regex: queryFilters[key] }
-        // })
-        // Không phân biệt
-        queryConditions.push({
-          [key]: { $regex: new RegExp(queryFilters[key], 'i') }
-        })
+        if (key === '_id') {
+          // Xử lý trường hợp lọc theo danh sách ID (ví dụ Starred Boards)
+          const ids = Array.isArray(queryFilters[key]) ? queryFilters[key] : [queryFilters[key]]
+          queryConditions.push({
+            _id: { $in: ids.map(id => ObjectId.createFromHexString(id)) }
+          })
+        } else {
+          // Mặc định search regex cho các trường text
+          queryConditions.push({
+            [key]: { $regex: new RegExp(queryFilters[key], 'i') }
+          })
+        }
       })
     }
 

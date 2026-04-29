@@ -2,6 +2,7 @@
 import { slugify } from '~/utils/formatter'
 import { boardModel } from '~/models/boardModel'
 import { cardModel } from '~/models/cardModel'
+import { userModel } from '~/models/userModel'
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep } from 'lodash'
@@ -31,6 +32,11 @@ const getDetails = async (userId, boardId) => {
     })
     delete boardClone.cards
     boardClone.columns = boardClone.columns.filter(column => column._destroy != true)
+
+    // Kiểm tra xem board này có được star bởi user hiện tại không
+    const user = await userModel.findOneById(userId)
+    boardClone.isStarred = !!user.starredBoardIds?.some(id => id.toString() === boardId)
+
     return boardClone
   } catch (error) { throw error }
 }
@@ -59,7 +65,11 @@ const getBoardDetailsSoftColumn = async (userId, boardId) => {
     delete boardClone.cards
     // Xử lý lấy về nhưng column có _destroy = true là nhưng column được xóa mềm
     boardClone.columns = boardClone.columns.filter(column => column._destroy === true)
-    console.log('🚀 ~ getBoardDetailsSoftColumn ~ boardClone:', boardClone)
+
+    // Kiểm tra xem board này có được star bởi user hiện tại không
+    const user = await userModel.findOneById(userId)
+    boardClone.isStarred = !!user.starredBoardIds?.some(id => id.toString() === boardId)
+
     return boardClone
   }
   catch (error) { throw error }
@@ -75,6 +85,16 @@ const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
       parseInt(itemsPerPage, 10),
       queryFilters
     )
+
+    // Kiểm tra isStarred cho từng board
+    const user = await userModel.findOneById(userId)
+    const starredIds = user.starredBoardIds?.map(id => id.toString()) || []
+    
+    results.boards = results.boards.map(board => ({
+      ...board,
+      isStarred: starredIds.includes(board._id.toString())
+    }))
+
     return results
   } catch (error) {
     throw error
@@ -126,6 +146,33 @@ const getArchivedCards = async (boardId) => {
   } catch (error) { throw error }
 }
 
+const toggleStar = async (userId, boardId) => {
+  try {
+    const user = await userModel.findOneById(userId)
+    if (!user) throw new ApiError(StatusCodes.NOT_FOUND, 'User not found!')
+
+    let starredBoardIds = user.starredBoardIds || []
+    let isStarred = false
+
+    // Convert all to string for easy comparison
+    const boardIdStr = boardId.toString()
+    const index = starredBoardIds.findIndex(id => id.toString() === boardIdStr)
+
+    if (index !== -1) {
+      // Remove
+      starredBoardIds.splice(index, 1)
+      isStarred = false
+    } else {
+      // Add
+      starredBoardIds.push(boardIdStr)
+      isStarred = true
+    }
+
+    await userModel.update(userId, { starredBoardIds })
+    return { isStarred }
+  } catch (error) { throw error }
+}
+
 export const boardService = {
   createNew,
   getDetails,
@@ -135,5 +182,6 @@ export const boardService = {
   createLabel,
   updateLabel,
   deleteLabel,
-  getArchivedCards
+  getArchivedCards,
+  toggleStar
 }
